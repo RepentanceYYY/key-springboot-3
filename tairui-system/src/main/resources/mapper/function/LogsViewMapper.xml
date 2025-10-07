@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tairui.function.mapper.LogsViewMapper">
+
+    <resultMap type="LogsView" id="LogsViewResult">
+        <result property="id"    column="id"    />
+        <result property="createAt"    column="createAt"    />
+        <result property="type"    column="type"    />
+        <result property="action"    column="action"    />
+        <result property="user"    column="user"    />
+        <result property="code"    column="code"    />
+        <result property="status"    column="status"    />
+        <result property="srttings"    column="srttings"    />
+    </resultMap>
+
+    <sql id="selectLogsViewVo">
+        select id, createAt, type, action, user, code, status, srttings from logs_view
+    </sql>
+
+    <select id="selectLogsViewList" parameterType="LogsView" resultMap="LogsViewResult">
+        <include refid="selectLogsViewVo"/>
+        <where>
+            <if test="createAt != null "> and createAt = #{createAt}</if>
+            <if test="type != null  and type != ''"> and type = #{type}</if>
+            <if test="user != null  and user != ''"> and user = #{user}</if>
+            <if test="code != null  and code != ''"> and code = #{code}</if>
+            <if test="status != null  and status != ''"> and status = #{status}</if>
+            <if test="srttings != null  and srttings != ''"> and srttings = #{srttings}</if>
+        </where>
+    </select>
+
+    <select id="selectLogsViewById" parameterType="Long" resultMap="LogsViewResult">
+        <include refid="selectLogsViewVo"/>
+        where id = #{id}
+    </select>
+
+    <insert id="insertLogsView" parameterType="LogsView" useGeneratedKeys="true" keyProperty="id">
+        insert into logs_view
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="createAt != null">createAt,</if>
+            <if test="type != null">type,</if>
+            <if test="action != null">action,</if>
+            <if test="user != null">user,</if>
+            <if test="code != null">code,</if>
+            <if test="status != null">status,</if>
+            <if test="srttings != null">srttings,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="createAt != null">#{createAt},</if>
+            <if test="type != null">#{type},</if>
+            <if test="action != null">#{action},</if>
+            <if test="user != null">#{user},</if>
+            <if test="code != null">#{code},</if>
+            <if test="status != null">#{status},</if>
+            <if test="srttings != null">#{srttings},</if>
+        </trim>
+    </insert>
+
+    <update id="updateLogsView" parameterType="LogsView">
+        update logs_view
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="createAt != null">createAt = #{createAt},</if>
+            <if test="type != null">type = #{type},</if>
+            <if test="action != null">action = #{action},</if>
+            <if test="user != null">user = #{user},</if>
+            <if test="code != null">code = #{code},</if>
+            <if test="status != null">status = #{status},</if>
+            <if test="srttings != null">srttings = #{srttings},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteLogsViewById" parameterType="Long">
+        delete from logs_view where id = #{id}
+    </delete>
+
+    <delete id="deleteLogsViewByIds" parameterType="String">
+        delete from logs_view where id in
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+</mapper>

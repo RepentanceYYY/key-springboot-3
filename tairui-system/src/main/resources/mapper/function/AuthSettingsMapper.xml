@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tairui.function.mapper.AuthSettingsMapper">
+
+    <resultMap type="AuthSettings" id="AuthSettingsResult">
+        <result property="id"    column="id"    />
+        <result property="faceAuth"    column="faceAuth"    />
+        <result property="livenessAuth"    column="livenessAuth"    />
+        <result property="fingerprintAuth"    column="fingerprintAuth"    />
+        <result property="cardAuth"    column="cardAuth"    />
+        <result property="passwordAuth"    column="passwordAuth"    />
+        <result property="alcoholDetection"    column="alcoholDetection"    />
+        <result property="alcoholThreshold"    column="alcoholThreshold"    />
+        <result property="misalignmentMode"    column="misalignmentMode"    />
+        <result property="smallScreen"    column="smallScreen"    />
+    </resultMap>
+
+    <sql id="selectAuthSettingsVo">
+        select id, faceAuth, livenessAuth, fingerprintAuth, cardAuth, passwordAuth, alcoholDetection, alcoholThreshold, misalignmentMode, smallScreen from auth_settings
+    </sql>
+
+    <select id="selectAuthSettingsList" parameterType="AuthSettings" resultMap="AuthSettingsResult">
+        <include refid="selectAuthSettingsVo"/>
+        <where>
+            <if test="faceAuth != null  and faceAuth != ''"> and faceAuth = #{faceAuth}</if>
+            <if test="livenessAuth != null  and livenessAuth != ''"> and livenessAuth = #{livenessAuth}</if>
+            <if test="fingerprintAuth != null  and fingerprintAuth != ''"> and fingerprintAuth = #{fingerprintAuth}</if>
+            <if test="cardAuth != null  and cardAuth != ''"> and cardAuth = #{cardAuth}</if>
+            <if test="passwordAuth != null  and passwordAuth != ''"> and passwordAuth = #{passwordAuth}</if>
+            <if test="alcoholDetection != null  and alcoholDetection != ''"> and alcoholDetection = #{alcoholDetection}</if>
+            <if test="alcoholThreshold != null  and alcoholThreshold != ''"> and alcoholThreshold = #{alcoholThreshold}</if>
+            <if test="misalignmentMode != null  and misalignmentMode != ''"> and misalignmentMode = #{misalignmentMode}</if>
+            <if test="smallScreen != null  and smallScreen != ''"> and smallScreen = #{smallScreen}</if>
+        </where>
+    </select>
+
+    <select id="selectAuthSettingsById" parameterType="Long" resultMap="AuthSettingsResult">
+        <include refid="selectAuthSettingsVo"/>
+        where id = #{id}
+    </select>
+
+    <insert id="insertAuthSettings" parameterType="AuthSettings">
+        insert into auth_settings
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="id != null">id,</if>
+            <if test="faceAuth != null">faceAuth,</if>
+            <if test="livenessAuth != null">livenessAuth,</if>
+            <if test="fingerprintAuth != null">fingerprintAuth,</if>
+            <if test="cardAuth != null">cardAuth,</if>
+            <if test="passwordAuth != null">passwordAuth,</if>
+            <if test="alcoholDetection != null">alcoholDetection,</if>
+            <if test="alcoholThreshold != null">alcoholThreshold,</if>
+            <if test="misalignmentMode != null">misalignmentMode,</if>
+            <if test="smallScreen != null">smallScreen,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="id != null">#{id},</if>
+            <if test="faceAuth != null">#{faceAuth},</if>
+            <if test="livenessAuth != null">#{livenessAuth},</if>
+            <if test="fingerprintAuth != null">#{fingerprintAuth},</if>
+            <if test="cardAuth != null">#{cardAuth},</if>
+            <if test="passwordAuth != null">#{passwordAuth},</if>
+            <if test="alcoholDetection != null">#{alcoholDetection},</if>
+            <if test="alcoholThreshold != null">#{alcoholThreshold},</if>
+            <if test="misalignmentMode != null">#{misalignmentMode},</if>
+            <if test="smallScreen != null">#{smallScreen},</if>
+        </trim>
+    </insert>
+
+    <update id="updateAuthSettings" parameterType="AuthSettings">
+        update auth_settings
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="faceAuth != null">faceAuth = #{faceAuth},</if>
+            <if test="livenessAuth != null">livenessAuth = #{livenessAuth},</if>
+            <if test="fingerprintAuth != null">fingerprintAuth = #{fingerprintAuth},</if>
+            <if test="cardAuth != null">cardAuth = #{cardAuth},</if>
+            <if test="passwordAuth != null">passwordAuth = #{passwordAuth},</if>
+            <if test="alcoholDetection != null">alcoholDetection = #{alcoholDetection},</if>
+            <if test="alcoholThreshold != null">alcoholThreshold = #{alcoholThreshold},</if>
+            <if test="misalignmentMode != null">misalignmentMode = #{misalignmentMode},</if>
+            <if test="smallScreen != null">smallScreen = #{smallScreen},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteAuthSettingsById" parameterType="Long">
+        delete from auth_settings where id = #{id}
+    </delete>
+
+    <delete id="deleteAuthSettingsByIds" parameterType="String">
+        delete from auth_settings where id in
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+</mapper>

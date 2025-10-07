@@ -1,0 +1,191 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tairui.function.mapper.KeyWorkflowMapper">
+
+    <resultMap type="KeyWorkflow" id="KeyWorkflowResult">
+        <result property="id" column="id"/>
+        <result property="workflowNo" column="workflow_no"/>
+        <result property="applyUserId" column="apply_user_id"/>
+        <result property="applyTime" column="apply_time"/>
+        <result property="applyReason" column="apply_reason"/>
+        <result property="expectedTime" column="expected_time"/>
+        <result property="approvalUserId" column="approval_user_id"/>
+        <result property="approvalTime" column="approval_time"/>
+        <result property="approvalComment" column="approval_comment"/>
+        <result property="currentStatus" column="current_status"/>
+        <result property="offlineData" column="offline_data"/>
+    </resultMap>
+
+    <sql id="selectKeyWorkflowVo">
+        select id,
+               workflow_no,
+               apply_user_id,
+               apply_time,
+               apply_reason,
+               expected_time,
+               approval_user_id,
+               approval_time,
+               approval_comment,
+               current_status,
+               offline_data
+        from key_workflow
+    </sql>
+
+    <select id="selectKeyWorkflowList" parameterType="KeyWorkflow" resultMap="KeyWorkflowResult">
+        <include refid="selectKeyWorkflowVo"/>
+        <where>
+            <if test="workflowNo != null  and workflowNo != ''">and workflow_no = #{workflowNo}</if>
+            <if test="applyUserId != null ">and apply_user_id = #{applyUserId}</if>
+            <if test="applyTime != null ">and apply_time = #{applyTime}</if>
+            <if test="applyReason != null  and applyReason != ''">and apply_reason = #{applyReason}</if>
+            <if test="expectedTime != null ">and expected_time = #{expectedTime}</if>
+            <if test="approvalUserId != null ">and approval_user_id = #{approvalUserId}</if>
+            <if test="approvalTime != null ">and approval_time = #{approvalTime}</if>
+            <if test="approvalComment != null  and approvalComment != ''">and approval_comment = #{approvalComment}</if>
+            <if test="currentStatus != null ">and current_status = #{currentStatus}</if>
+            <if test="offlineData != null ">and offline_data = #{offlineData}</if>
+        </where>
+    </select>
+
+    <select id="selectKeyWorkflowById" parameterType="Long" resultMap="KeyWorkflowResult">
+        <include refid="selectKeyWorkflowVo"/>
+        where id = #{id}
+    </select>
+
+    <sql id="selectKeyWorkflowDetailAndKeyAllInfoSql">
+        SELECT kw.id                 AS workflowId,
+               kw.workflow_no        AS workflowNo,
+               kw.apply_user_id      AS applyUserId,
+               kw.apply_time         AS applyTime,
+               kw.apply_reason       AS applyReason,
+               kw.expected_time      AS expectedTime,
+               kw.approval_user_id   AS approvalUserId,
+               kw.approval_time      AS approvalTime,
+               kw.approval_comment   AS approvalComment,
+               kw.current_status     AS workflowCurrentStatus,
+               kw.offline_data       AS offlineData,
+               ua.name               AS applyUserName,
+               uu.name               AS approvalUserName,
+               kwd.key_id            AS keyId,
+               kwd.status            AS detailStatus,
+               kwd.apply_type        AS applyType,
+               kwd.offline_data      AS detailOfflineData,
+               k.code                AS keyCode,
+               k.name                AS keyName,
+               k.position            AS keyPosition,
+               k.usageLocation       AS keyUsageLocation,
+               k.tag                 AS keyTag,
+               k.currentTag          AS keyCurrentTag,
+               k.controlPanelAddress AS keyControlPanelAddress,
+               k.circuitPanelAddress AS keyCircuitPanelAddress,
+               k.createAt            AS keyCreateAt,
+               k.lastControlUserId   AS keyLastControlUserId,
+               k.status              AS keyStatus,
+               sss.id                AS keyCabinetId,
+               sss.keyNumber         AS keyCabinetNumber,
+               sss.cabinetName       AS keyCabinetName,
+               sss.addressLocation   AS keyCabinetAddressLocation
+        FROM key_workflow_detail kwd
+                 INNER JOIN key_workflow kw ON kwd.key_workflow_id = kw.id
+                 LEFT JOIN `key` k ON kwd.key_id = k.id
+                 LEFT JOIN system_settings sss ON kwd.key_cabinet_id = sss.id
+                 LEFT JOIN user ua ON kw.apply_user_id = ua.id
+                 LEFT JOIN user uu ON kw.approval_user_id = uu.id
+    </sql>
+
+    <select id="selectWorkflowDetailKeyWorkflowDetailAndKeyPOJO"
+            parameterType="com.tairui.function.domain.pojo.KeyWorkflowDetailAndKeyPOJO"
+            resultType="com.tairui.function.domain.pojo.KeyWorkflowDetailAndKeyPOJO">
+        <include refid="selectKeyWorkflowDetailAndKeyAllInfoSql"/>
+        <where>
+            <if test="applyUserId != null">kw.apply_user_id = #{applyUserId}</if>
+            <if test="approvalUserId != null">kw.approval_user_id = #{approvalUserId}</if>
+            <if test="applyType !=null">kw.apply_type = #{applyType}</if>
+        </where>
+    </select>
+
+    <select id="selectKeyWorkflowListByUserIdAndKeyCabinetId"
+            resultType="com.tairui.function.domain.KeyWorkflow">
+        SELECT DISTINCT kw.id,
+                        kw.approval_user_id
+        FROM key_workflow kw
+                 INNER JOIN
+             key_workflow_detail kwd
+             on kw.id = kwd.key_workflow_id
+        WHERE apply_user_id = #{applyUserId}
+          AND kw.current_status = #{currentStatus}
+          AND kwd.key_cabinet_id = #{keyCabinetId}
+    </select>
+
+    <select id="selectWorkflowDetailKeyWorkflowDetailAndKeyPOJOByTargetUserId"
+            resultType="com.tairui.function.domain.pojo.KeyWorkflowDetailAndKeyPOJO">
+        <include refid="selectKeyWorkflowDetailAndKeyAllInfoSql"/>
+        <where>
+            (kw.apply_user_id = #{targetUserId}
+            OR (kw.approval_user_id = #{targetUserId}
+            AND kw.current_status = #{workflowCurrentStatus}))
+        </where>
+    </select>
+
+    <insert id="insertKeyWorkflow" parameterType="KeyWorkflow" useGeneratedKeys="true" keyProperty="id">
+        insert into key_workflow
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="id != null">id,</if>
+            <if test="workflowNo != null and workflowNo != ''">workflow_no,</if>
+            <if test="applyUserId != null">apply_user_id,</if>
+            <if test="applyTime != null">apply_time,</if>
+            <if test="applyReason != null">apply_reason,</if>
+            <if test="expectedTime != null">expected_time,</if>
+            <if test="approvalUserId != null">approval_user_id,</if>
+            <if test="approvalTime != null">approval_time,</if>
+            <if test="approvalComment != null">approval_comment,</if>
+            <if test="currentStatus != null">current_status,</if>
+            <if test="offlineData != null">offline_data,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="id != null">#{id},</if>
+            <if test="workflowNo != null and workflowNo != ''">#{workflowNo},</if>
+            <if test="applyUserId != null">#{applyUserId},</if>
+            <if test="applyTime != null">#{applyTime},</if>
+            <if test="applyReason != null">#{applyReason},</if>
+            <if test="expectedTime != null">#{expectedTime},</if>
+            <if test="approvalUserId != null">#{approvalUserId},</if>
+            <if test="approvalTime != null">#{approvalTime},</if>
+            <if test="approvalComment != null">#{approvalComment},</if>
+            <if test="currentStatus != null">#{currentStatus},</if>
+            <if test="offlineData != null">#{offlineData},</if>
+        </trim>
+    </insert>
+
+    <update id="updateKeyWorkflow" parameterType="KeyWorkflow">
+        update key_workflow
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="workflowNo != null and workflowNo != ''">workflow_no = #{workflowNo},</if>
+            <if test="applyUserId != null">apply_user_id = #{applyUserId},</if>
+            <if test="applyTime != null">apply_time = #{applyTime},</if>
+            <if test="applyReason != null">apply_reason = #{applyReason},</if>
+            <if test="expectedTime != null">expected_time = #{expectedTime},</if>
+            <if test="approvalUserId != null">approval_user_id = #{approvalUserId},</if>
+            <if test="approvalTime != null">approval_time = #{approvalTime},</if>
+            <if test="approvalComment != null">approval_comment = #{approvalComment},</if>
+            <if test="currentStatus != null">current_status = #{currentStatus},</if>
+            <if test="offlineData != null">offline_data = #{offlineData},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteKeyWorkflowById" parameterType="Long">
+        delete
+        from key_workflow
+        where id = #{id}
+    </delete>
+
+    <delete id="deleteKeyWorkflowByIds" parameterType="String">
+        delete from key_workflow where id in
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+</mapper>

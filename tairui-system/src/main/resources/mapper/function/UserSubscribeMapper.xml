@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.tairui.function.mapper.UserSubscribeMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="UserSubscribeResultMap" type="com.tairui.function.domain.UserSubscribe">
+        <id property="userId" column="userId"/>
+        <result property="openId" column="openId"/>
+        <result property="templateId" column="templateId"/>
+        <result property="createTime" column="createTime"/>
+    </resultMap>
+
+    <!-- 查询用户订阅列表，可根据传入条件动态查询 -->
+    <select id="selectUserSubscribeList" parameterType="com.tairui.function.domain.UserSubscribe"
+            resultMap="UserSubscribeResultMap">
+        SELECT
+        userId,
+        openId,
+        templateId,
+        createTime
+        FROM user_subscribe
+        <where>
+            <if test="userId != null">
+                AND userId = #{userId}
+            </if>
+            <if test="openId != null and openId != ''">
+                AND openId = #{openId}
+            </if>
+            <if test="templateId != null and templateId != ''">
+                AND templateId = #{templateId}
+            </if>
+        </where>
+        ORDER BY createTime DESC
+    </select>
+
+    <!-- 插入用户订阅 -->
+    <insert id="insertUserSubscribe" parameterType="com.tairui.function.domain.UserSubscribe">
+        INSERT INTO user_subscribe
+            (userId, openId, templateId, createTime)
+        VALUES (#{userId}, #{openId}, #{templateId}, #{createTime})
+    </insert>
+
+</mapper>

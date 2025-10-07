@@ -1,0 +1,197 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tairui.function.mapper.SystemSettingsMapper">
+
+    <resultMap type="SystemSettings" id="SystemSettingsResult">
+        <result property="id"    column="id"    />
+        <result property="keyNumber"    column="keyNumber"    />
+        <result property="cabinetName"    column="cabinetName"    />
+        <result property="cabinetCapacity"    column="cabinetCapacity"    />
+        <result property="adminPassword"    column="adminPassword"    />
+        <result property="scheduledReboot"    column="scheduledReboot"    />
+        <result property="rebootTime"    column="rebootTime"    />
+        <result property="networkMode"    column="networkMode"    />
+        <result property="keyRequest"    column="keyRequest"    />
+        <result property="borrowReview"    column="borrowReview"    />
+        <result property="returnCycle"    column="returnCycle"    />
+        <result property="returnTime"    column="returnTime"    />
+        <result property="timeoutReminder"    column="timeoutReminder"    />
+        <result property="returnToHome"    column="returnToHome"    />
+        <result property="voiceAnnouncement"    column="voiceAnnouncement"    />
+        <result property="lastUpdateTime"    column="lastUpdateTime"    />
+        <result property="relatedUserNames"    column="related_user_names"    />
+        <result property="relatedUserIds"    column="related_user_ids"    />
+        <result property="bindStatus"    column="bindStatus"    />
+    </resultMap>
+
+    <sql id="selectSystemSettingsVo">
+        SELECT
+            ss.id,
+            ss.keyNumber,
+            ss.cabinetName,
+            ss.cabinetCapacity,
+            ss.adminPassword,
+            ss.scheduledReboot,
+            ss.rebootTime,
+            ss.networkMode,
+            ss.keyRequest,
+            ss.borrowReview,
+            ss.returnCycle,
+            ss.returnTime,
+            ss.timeoutReminder,
+            ss.returnToHome,
+            ss.voiceAnnouncement,
+            ss.lastUpdateTime,
+            ss.bindStatus,
+            GROUP_CONCAT(DISTINCT u.name ORDER BY u.id SEPARATOR ',') AS related_user_names,
+            GROUP_CONCAT(DISTINCT u.id ORDER BY u.id SEPARATOR ',') AS related_user_ids
+        FROM
+            system_settings ss
+
+                LEFT JOIN `user` u
+                          ON FIND_IN_SET(ss.id, u.srttings)
+
+    </sql>
+
+    <select id="selectSystemSettingsList" parameterType="SystemSettings" resultMap="SystemSettingsResult">
+        <include refid="selectSystemSettingsVo"/>
+        <where>
+            <if test="keyNumber != null "> and ss.keyNumber like concat('%', #{keyNumber}, '%')</if>
+            <if test="cabinetName != null  and cabinetName != ''"> and ss.cabinetName like concat('%', #{cabinetName}, '%')</if>
+            <if test="bindStatus != null  and bindStatus != ''"> and ss.bindStatus =  #{bindStatus}</if>
+        </where>
+        GROUP BY
+        ss.id
+    </select>
+
+    <select id="selectSystemSettingsById" parameterType="Long" resultMap="SystemSettingsResult">
+        <include refid="selectSystemSettingsVo"/>
+        where ss.id = #{id}
+        GROUP BY
+        ss.id
+    </select>
+    <select id="checkKeyNumberUnique" parameterType="String" resultMap="SystemSettingsResult">
+        select id,keyNumber from system_settings where keyNumber = #{keyNumber}  limit 1
+    </select>
+    <select id="lastInsertId" resultType="java.lang.Integer">
+        SELECT LAST_INSERT_ID();
+    </select>
+
+    <select id="selectAuthSystemSettingsList" resultType="com.tairui.function.domain.AuthSystemSettings">
+        SELECT
+        s.id,
+        s.keyNumber,
+        s.cabinetName,
+        s.cabinetCapacity,
+        s.adminPassword,
+        s.scheduledReboot,
+        s.rebootTime,
+        s.networkMode,
+        s.keyRequest,
+        s.borrowReview,
+        s.returnCycle,
+        s.returnTime,
+        s.timeoutReminder,
+        s.returnToHome,
+        s.voiceAnnouncement,
+        s.lastUpdateTime,
+        a.faceAuth,
+        a.livenessAuth,
+        a.fingerprintAuth,
+        a.cardAuth,
+        a.passwordAuth,
+        a.alcoholDetection,
+        a.alcoholThreshold,
+        a.misalignmentMode,
+        a.smallScreen,
+        s.bindStatus
+        FROM system_settings s
+        INNER JOIN auth_settings a ON s.id = a.id
+        <trim prefix="WHERE" prefixOverrides="AND | OR">
+            <!-- 关键字搜索条件 -->
+            <if test="keyNumber != null and keyNumber != ''">
+                AND s.keyNumber LIKE CONCAT('%', #{keyNumber}, '%')
+            </if>
+            <!-- 柜体名称搜索条件 -->
+            <if test="cabinetName != null and cabinetName != ''">
+                AND s.cabinetName LIKE CONCAT('%', #{cabinetName}, '%')
+            </if>
+        </trim>
+    </select>
+
+    <select id="selectAllSystemSettings" resultType="com.tairui.function.domain.SystemSettings">
+        <include refid="selectSystemSettingsVo"/>
+    </select>
+    <insert id="insertSystemSettings" parameterType="SystemSettings" useGeneratedKeys="true" keyProperty="id">
+        insert into system_settings
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="keyNumber != null">keyNumber,</if>
+            <if test="cabinetName != null">cabinetName,</if>
+            <if test="cabinetCapacity != null">cabinetCapacity,</if>
+            <if test="adminPassword != null">adminPassword,</if>
+            <if test="scheduledReboot != null">scheduledReboot,</if>
+            <if test="rebootTime != null">rebootTime,</if>
+            <if test="networkMode != null">networkMode,</if>
+            <if test="keyRequest != null">keyRequest,</if>
+            <if test="borrowReview != null">borrowReview,</if>
+            <if test="returnCycle != null">returnCycle,</if>
+            <if test="returnTime != null">returnTime,</if>
+            <if test="timeoutReminder != null">timeoutReminder,</if>
+            <if test="returnToHome != null">returnToHome,</if>
+            <if test="voiceAnnouncement != null">voiceAnnouncement,</if>
+            lastUpdateTime,
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="keyNumber != null">#{keyNumber},</if>
+            <if test="cabinetName != null">#{cabinetName},</if>
+            <if test="cabinetCapacity != null">#{cabinetCapacity},</if>
+            <if test="adminPassword != null">#{adminPassword},</if>
+            <if test="scheduledReboot != null">#{scheduledReboot},</if>
+            <if test="rebootTime != null">#{rebootTime},</if>
+            <if test="networkMode != null">#{networkMode},</if>
+            <if test="keyRequest != null">#{keyRequest},</if>
+            <if test="borrowReview != null">#{borrowReview},</if>
+            <if test="returnCycle != null">#{returnCycle},</if>
+            <if test="returnTime != null">#{returnTime},</if>
+            <if test="timeoutReminder != null">#{timeoutReminder},</if>
+            <if test="returnToHome != null">#{returnToHome},</if>
+            <if test="voiceAnnouncement != null">#{voiceAnnouncement},</if>
+            now(),
+         </trim>
+    </insert>
+
+    <update id="updateSystemSettings" parameterType="SystemSettings">
+        update system_settings
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="keyNumber != null">keyNumber = #{keyNumber},</if>
+            <if test="cabinetName != null">cabinetName = #{cabinetName},</if>
+            <if test="cabinetCapacity != null">cabinetCapacity = #{cabinetCapacity},</if>
+            <if test="adminPassword != null">adminPassword = #{adminPassword},</if>
+            <if test="scheduledReboot != null">scheduledReboot = #{scheduledReboot},</if>
+            <if test="rebootTime != null">rebootTime = #{rebootTime},</if>
+            <if test="networkMode != null">networkMode = #{networkMode},</if>
+            <if test="keyRequest != null">keyRequest = #{keyRequest},</if>
+            <if test="borrowReview != null">borrowReview = #{borrowReview},</if>
+            <if test="returnCycle != null">returnCycle = #{returnCycle},</if>
+            <if test="returnTime != null">returnTime = #{returnTime},</if>
+            <if test="timeoutReminder != null">timeoutReminder = #{timeoutReminder},</if>
+            <if test="returnToHome != null">returnToHome = #{returnToHome},</if>
+            <if test="voiceAnnouncement != null">voiceAnnouncement = #{voiceAnnouncement},</if>
+            lastUpdateTime = now(),
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteSystemSettingsById" parameterType="Long">
+        delete from system_settings where id = #{id}
+    </delete>
+
+    <delete id="deleteSystemSettingsByIds" parameterType="String">
+        delete from system_settings where id in
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+</mapper>

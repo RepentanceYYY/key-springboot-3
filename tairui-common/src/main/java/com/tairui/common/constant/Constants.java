@@ -170,4 +170,39 @@ public class Constants
      */
     public static final String[] JOB_ERROR_STR = { "java.net.URL", "javax.naming.InitialContext", "org.yaml.snakeyaml",
             "org.springframework", "org.apache", "com.tairui.common.utils.file", "com.tairui.common.config", "com.tairui.generator" };
+
+    /**
+     * 未命名钥匙
+     */
+    public static final String NULL_NAME = "未命名钥匙";
+
+    /**
+     * 配置项关闭
+     */
+    public static final String DISABLE = "disable";
+
+    /**
+     * 配置项开启
+     */
+    public static final String ENABLE = "enable";
+
+    /**
+     * 状态：在位
+     */
+    public static final String AVAILABLE = "available";
+
+    /**
+     * 状态：错位
+     */
+    public static final String ERROR = "error";
+
+    /**
+     * 状态：离位
+     */
+    public static final String BORROWED = "borrowed";
+
+    /**
+     * 状态：未绑定
+     */
+    public static final String UNBOUND = "unbound";
 }

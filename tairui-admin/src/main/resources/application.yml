@@ -117,3 +117,10 @@ xss:
   excludes: /system/notice
   # 匹配链接
   urlPatterns: /system/*,/monitor/*,/tool/*
+
+wx:
+  token: "aB9kF3rX7pQ1sL2vM8dT0wZ6yH5jN4q"
+  appsecret: "a4d473829c5d357d186806838168d830"
+  appid: "wx0a61c86282080238"
+  template:
+    borrow-reminder-msg-template-id: "GM_u4bwuLPG6Kzn9rAhRaUmbEVMTfzxAK4GG2jXt8LA"

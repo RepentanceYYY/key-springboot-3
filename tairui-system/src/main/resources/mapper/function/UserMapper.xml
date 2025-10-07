@@ -1,0 +1,313 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tairui.function.mapper.UserMapper">
+
+    <resultMap type="User" id="UserResult">
+        <result property="id" column="id"/>
+        <result property="name" column="name"/>
+        <result property="userName" column="userName"/>
+        <result property="gender" column="gender"/>
+        <result property="createdAt" column="createdAt"/>
+        <result property="active" column="active"/>
+        <result property="role" column="role"/>
+        <result property="cardInfo" column="cardInfo"/>
+        <result property="fingerPrintInfo" column="fingerPrintInfo"/>
+        <result property="faceInfo" column="faceInfo"/>
+        <result property="passWord" column="passWord"/>
+        <result property="srttings" column="srttings"/>
+    </resultMap>
+
+    <resultMap id="UserKeyVo" type="UserLeftJoinKeyVo">
+        <id property="id" column="id"/>
+        <result property="userNikeName" column="userNikeName"/>
+        <result property="userName" column="userName"/>
+        <result property="userGender" column="userGender"/>
+        <result property="userCreatedAt" column="userCreatedAt"/>
+        <result property="userActive" column="userActive"/>
+        <result property="role" column="role"/>
+        <result property="cardInfo" column="cardInfo"/>
+        <result property="fingerPrintInfo" column="fingerPrintInfo"/>
+        <result property="faceInfo" column="faceInfo"/>
+        <result property="passWord" column="passWord"/>
+        <result property="srttings" column="srttings"/>
+        <result property="keyPosition" column="keyPosition"/>
+        <result property="keyName" column="keyName"/>
+        <result property="keyCode" column="keyCode"/>
+    </resultMap>
+
+    <sql id="selectUserVo">
+        select id,
+               name,
+               userName,
+               gender,
+               createdAt,
+               active,
+               role,
+               cardInfo,
+               fingerPrintInfo,
+               faceInfo,
+               passWord,
+               srttings
+        from user
+    </sql>
+
+    <sql id="selectUserKeyVo">
+        (
+            -- 有钥匙的用户
+            SELECT u.id,
+                   u.`name`    AS userNikeName,
+                   u.userName,
+                   u.gender    as userGender,
+                   u.createdAt as userCreatedAt,
+                   u.active    as userActive,
+                   u.role,
+                   u.cardInfo,
+                   CASE
+                       WHEN u.fingerPrintInfo IS NULL OR u.fingerPrintInfo = '' THEN '未注册'
+                       ELSE '已注册'
+                       END     AS fingerPrintInfo,
+                   CASE
+                       WHEN u.faceInfo IS NULL OR u.faceInfo = '' THEN '未绑定'
+                       ELSE '已绑定'
+                       END     AS faceInfo,
+                   u.`passWord`,
+                   u.`srttings`,
+                   k.`code`    as keyCode,
+                   k.`name`    as keyName,
+                   k.position  as keyPosition
+            FROM `user` u
+                     INNER JOIN key_user ku ON u.id = ku.userId
+                     INNER JOIN `key` k ON ku.keyId = k.id)
+        UNION ALL
+        (
+            -- 没有任何钥匙的用户，只取一条
+            SELECT u.id,
+                   u.`name`    AS userNikeName,
+                   u.userName,
+                   u.gender    as userGender,
+                   u.createdAt as userCreatedAt,
+                   u.active    as userActive,
+                   u.role,
+                   u.cardInfo,
+                   CASE
+                       WHEN u.fingerPrintInfo IS NULL OR u.fingerPrintInfo = '' THEN '未注册'
+                       ELSE '已注册'
+                       END     AS fingerPrintInfo,
+                   CASE
+                       WHEN u.faceInfo IS NULL OR u.faceInfo = '' THEN '未绑定'
+                       ELSE '已绑定'
+                       END     AS faceInfo,
+                   u.`passWord`,
+                   u.`srttings`,
+                   NULL        as keyCode,
+                   NULL        as keyName,
+                   NULL        as keyPosition
+            FROM `user` u
+            WHERE NOT EXISTS (SELECT 1 FROM key_user ku WHERE ku.userId = u.id))
+    </sql>
+
+    <select id="selectUserBaseListByIds" resultType="UserBase">
+        <include refid="selectUserVo"/>
+        WHERE id IN
+        <foreach collection="ids" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </select>
+
+
+    <select id="selectUserList" parameterType="User" resultMap="UserResult">
+        <include refid="selectUserVo"/>
+        <where>
+            <if test="name != null  and name != ''">and name like concat('%', #{name}, '%')</if>
+            <if test="userName != null  and userName != ''">and userName like concat('%', #{userName}, '%')</if>
+            <if test="active != null  and active != ''">and active = #{active}</if>
+            <if test="role != null  and role != ''">and role = #{role}</if>
+        </where>
+    </select>
+
+    <select id="selectUserLeftJoinKeyVoList" parameterType="userLeftJoinKeyVo" resultMap="UserKeyVo">
+        <include refid="selectUserKeyVo"/>
+        <trim prefix="WHERE" prefixOverrides="OR |AND">
+            <if test="userNikeName !=null and userNikeName !=''">
+                OR userNikeName LIKE concat('%',#{userNikeName},'%')
+            </if>
+            <if test="userName !=null and userName !=''">
+                OR userName LIKE concat('%',#{userName},'%')
+            </if>
+            <if test="role !=null and role !=''">
+                OR role = #{role}
+            </if>
+        </trim>
+    </select>
+
+    <select id="selectUserById" parameterType="Long" resultMap="UserResult">
+        <include refid="selectUserVo"/>
+        where id = #{id}
+    </select>
+    <select id="checkNameUnique" resultType="com.tairui.common.core.domain.entity.User">
+        select id, name
+        from user
+        where name = #{name} limit 1
+    </select>
+    <select id="checkUserNameUnique" resultType="com.tairui.common.core.domain.entity.User">
+        select id, userName
+        from user
+        where userName = #{userName} limit 1
+    </select>
+
+    <select id="selectExportUserKeyList" resultType="com.tairui.common.core.domain.entity.User">
+        SELECT DISTINCT u.id       AS user_id,
+                        u.`name`,
+                        u.userName,
+                        u.gender,
+                        u.createdAt,
+                        u.active,
+                        u.role,
+                        u.`passWord`,
+                        u.`srttings`,
+                        k.`code`   as keyCode,
+                        k.`name`   as keyName,
+                        k.position as keyPosition
+        FROM `user` u
+                 left JOIN key_user ku ON u.id = ku.userId
+                 left JOIN `key` k ON ku.keyId = k.id;
+    </select>
+
+
+    <select id="selectExportUserList" resultType="com.tairui.common.core.domain.entity.User">
+        SELECT
+        u.id AS user_id,
+        u.name,
+        u.userName,
+        u.gender,
+        u.createdAt,
+        u.active,
+        u.role,
+        u.cardInfo,
+        u.fingerPrintInfo,
+        u.faceInfo,
+        u.passWord,
+        COALESCE(GROUP_CONCAT(s.cabinetName ORDER BY s.id SEPARATOR ','), '') AS srttings
+        FROM
+        user u
+        LEFT JOIN
+        system_settings s
+        ON FIND_IN_SET(s.id, u.srttings) > 0
+        <where>
+            <if test="name != null  and name != ''">and name like concat('%', #{name}, '%')</if>
+            <if test="userName != null  and userName != ''">and userName like concat('%', #{userName}, '%')</if>
+            <if test="active != null  and active != ''">and active = #{active}</if>
+            <if test="role != null  and role != ''">and role = #{role}</if>
+        </where>
+        GROUP BY
+        u.id
+        ORDER BY
+        u.id;
+    </select>
+    <select id="getUsersByKeyPosition" resultType="com.tairui.common.core.domain.entity.User">
+        SELECT u.id,
+               u.NAME
+        FROM `user` u
+                 LEFT JOIN `system_settings` s ON FIND_IN_SET(s.id, u.srttings)
+                 LEFT JOIN `key` k ON k.srttings = s.id
+        WHERE k.id = #{id};
+    </select>
+    <select id="selectUserByUsername" resultType="com.tairui.common.core.domain.entity.User">
+        select *
+        from `user`
+        where userName = #{userName};
+    </select>
+    <select id="selectUserSimpleVo" resultType="com.tairui.function.domain.vo.UserSimpleVo">
+        select u.id        as userId,
+               u.name      as userNikeName,
+               u.userName  as userName,
+               u.role      as userRole,
+               u.active    as userActive,
+               u.createdAt as userCreatedAt,
+               u.srttings  as keyCabinetsStr
+        from `user` as u;
+    </select>
+    <select id="selectUserBaseById" resultType="com.tairui.function.domain.UserBase">
+        <include refid="selectUserVo"/>
+        WHERE id = #{userId}
+    </select>
+
+    <insert id="insertUser" parameterType="User" useGeneratedKeys="true" keyProperty="id">
+        insert into user
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="name != null and name != ''">name,</if>
+            <if test="userName != null and userName != ''">userName,</if>
+            <if test="gender != null">gender,</if>
+            <if test="active != null and active != ''">active,</if>
+            <if test="role != null and role != ''">role,</if>
+            <if test="cardInfo != null">cardInfo,</if>
+            <if test="fingerPrintInfo != null">fingerPrintInfo,</if>
+            <if test="faceInfo != null">faceInfo,</if>
+            <if test="passWord != null and passWord != ''">passWord,</if>
+            <if test="srttings != null">srttings,</if>
+            createdAt,
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="name != null and name != ''">#{name},</if>
+            <if test="userName != null and userName != ''">#{userName},</if>
+            <if test="gender != null">#{gender},</if>
+            <if test="active != null and active != ''">#{active},</if>
+            <if test="role != null and role != ''">#{role},</if>
+            <if test="cardInfo != null">#{cardInfo},</if>
+            <if test="fingerPrintInfo != null">#{fingerPrintInfo},</if>
+            <if test="faceInfo != null">#{faceInfo},</if>
+            <if test="passWord != null and passWord != ''">#{passWord},</if>
+            <if test="srttings != null">#{srttings},</if>
+            now(),
+        </trim>
+    </insert>
+
+    <update id="updateUser" parameterType="User">
+        update user
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="name != null and name != ''">name = #{name},</if>
+            <if test="userName != null and userName != ''">userName = #{userName},</if>
+            <if test="gender != null">gender = #{gender},</if>
+            <if test="createdAt != null">createdAt = #{createdAt},</if>
+            <if test="active != null and active != ''">active = #{active},</if>
+            <if test="role != null and role != ''">role = #{role},</if>
+            <if test="cardInfo != null">cardInfo = #{cardInfo},</if>
+            <if test="fingerPrintInfo != null">fingerPrintInfo = #{fingerPrintInfo},</if>
+            <if test="faceInfo != null">faceInfo = #{faceInfo},</if>
+            <if test="passWord != null and passWord != ''">passWord = #{passWord},</if>
+            <if test="srttings != null">srttings = #{srttings},</if>
+        </trim>
+        where id = #{id}
+    </update>
+    <update id="updateUserOwnCabinetPermissions">
+        update user
+        set srttings = #{keyCabinetsStr}
+        where id = #{userId};
+    </update>
+
+    <delete id="deleteUserById" parameterType="Long">
+        delete
+        from user
+        where id = #{id}
+    </delete>
+
+    <delete id="deleteUserByIds" parameterType="String">
+        delete from user where id in
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+    <delete id="removeBoundKeysByUserCabinet">
+        DELETE ku2
+        FROM key_user ku2
+        INNER JOIN key_user ku ON ku2.id = ku.id
+        INNER JOIN `key` k ON ku.keyId = k.id
+        WHERE k.srttings IN
+        <foreach collection="dbIdSet" item="item" open="(" separator="," close=")">
+            #{item}  <!-- 每条数据单独作为参数 -->
+        </foreach>
+        AND ku.userId = #{id};
+    </delete>
+</mapper>

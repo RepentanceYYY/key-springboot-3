@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tairui.function.mapper.KeyWorkflowDetailMapper">
+
+    <resultMap type="KeyWorkflowDetail" id="KeyWorkflowDetailResult">
+        <result property="id" column="id"/>
+        <result property="keyWorkflowId" column="key_workflow_id"/>
+        <result property="keyCabinetId" column="key_cabinet_id"/>
+        <result property="keyId" column="key_id"/>
+        <result property="applyType" column="apply_type"/>
+        <result property="status" column="status"/>
+        <result property="offlineData" column="offline_data"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <sql id="selectKeyWorkflowDetailVo">
+        select id,
+               key_workflow_id,
+               key_cabinet_id,
+               key_id,
+               apply_type,
+               status,
+               offline_data
+        from key_workflow_detail
+    </sql>
+
+    <select id="selectKeyWorkflowDetailList" parameterType="KeyWorkflowDetail" resultMap="KeyWorkflowDetailResult">
+        <include refid="selectKeyWorkflowDetailVo"/>
+        <where>
+            <if test="keyWorkflowId != null ">and key_workflow_id = #{keyWorkflowId}</if>
+            <if test="keyCabinetId != null ">and key_cabinet_id = #{keyCabinetId}</if>
+            <if test="keyId != null ">and key_id = #{keyId}</if>
+            <if test="applyType != null ">and apply_type = #{applyType}</if>
+            <if test="status != null ">and status = #{status}</if>
+            <if test="offlineData != null ">and offline_data = #{offlineData}</if>
+        </where>
+    </select>
+
+    <select id="selectKeyWorkflowDetailById" parameterType="Long" resultMap="KeyWorkflowDetailResult">
+        <include refid="selectKeyWorkflowDetailVo"/>
+        where id = #{id}
+    </select>
+
+    <select id="selectLastKeyWorkflowDetailByKeyIdAndApplyType" parameterType="java.lang.Integer"
+            resultMap="KeyWorkflowDetailResult">
+        <include refid="selectKeyWorkflowDetailVo"/>
+        WHERE key_id = #{keyId}
+        AND apply_type = #{applyType}
+        ORDER BY update_time DESC
+        LIMIT 1
+    </select>
+
+    <select id="selectKeyWorkflowDetailListByIds"
+            parameterType="java.lang.Integer"
+            resultType="com.tairui.function.domain.KeyWorkflowDetail">
+        select *
+        from key_workflow_detail
+        where id in
+        <foreach collection="ids" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </select>
+    <select id="selectKeyWorkflowDetailByUserIdAndApplyType"
+            parameterType="java.lang.Integer"
+            resultType="com.tairui.function.domain.KeyWorkflowDetail">
+        select kwd.*
+        from key_workflow_detail as kwd
+                 inner join key_workflow as kw on kwd.key_workflow_id = kw.id
+        where kw.apply_user_id = #{applyUserId}
+          and kwd.apply_type = #{applyType}
+    </select>
+
+    <select id="selectLastKeyWorkflowDetailByUserIdAndApplyType"
+            resultType="com.tairui.function.domain.KeyWorkflowDetail">
+        select kwd.*
+        from key_workflow_detail kwd
+                 inner join key_workflow kw on kwd.key_workflow_id = kw.id
+                 inner join (select key_cabinet_id, key_id, max(update_time) as max_time
+                             from key_workflow_detail
+                             group by key_cabinet_id, key_id) t
+                            on kwd.key_cabinet_id = t.key_cabinet_id
+                                and kwd.key_id = t.key_id
+                                and kwd.update_time = t.max_time
+        where kw.apply_user_id = #{applyUserId}
+          and kwd.apply_type = #{applyType}
+    </select>
+
+    <insert id="insertKeyWorkflowDetail" parameterType="KeyWorkflowDetail" useGeneratedKeys="true" keyProperty="id">
+        insert into key_workflow_detail
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="keyWorkflowId != null">key_workflow_id,</if>
+            <if test="keyCabinetId != null">key_cabinet_id,</if>
+            <if test="keyId != null">key_id,</if>
+            <if test="applyType != null">apply_type,</if>
+            <if test="status != null">status,</if>
+            <if test="offlineData != null">offline_data,</if>
+            <if test="updateTime != null">update_time,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="keyWorkflowId != null">#{keyWorkflowId},</if>
+            <if test="keyCabinetId != null">#{keyCabinetId},</if>
+            <if test="keyId != null">#{keyId},</if>
+            <if test="applyType != null">#{applyType},</if>
+            <if test="status != null">#{status},</if>
+            <if test="updateTime != null">#{updateTime},</if>
+        </trim>
+    </insert>
+
+    <insert id="insertBatchKeyWorkflowDetail" parameterType="java.util.List">
+        INSERT INTO key_workflow_detail
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            key_workflow_id,
+            key_cabinet_id,
+            key_id,
+            apply_type,
+            status,
+            offline_data,
+            update_time
+        </trim>
+        VALUES
+        <foreach collection="list" item="item" separator=",">
+            <trim prefix="(" suffix=")" suffixOverrides=",">
+                #{item.keyWorkflowId},
+                #{item.keyCabinetId},
+                #{item.keyId},
+                #{item.applyType},
+                #{item.status},
+                #{item.offlineData},
+                #{item.updateTime}
+            </trim>
+        </foreach>
+    </insert>
+
+    <update id="updateKeyWorkflowDetail" parameterType="KeyWorkflowDetail">
+        update key_workflow_detail
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="keyWorkflowId != null">key_workflow_id = #{keyWorkflowId},</if>
+            <if test="keyCabinetId != null">key_cabinet_id = #{keyCabinetId},</if>
+            <if test="keyId != null">key_id = #{keyId},</if>
+            <if test="applyType != null">apply_type = #{applyType},</if>
+            <if test="status != null">status = #{status},</if>
+            <if test="offlineData != null">offline_data = #{offlineData},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteKeyWorkflowDetailById" parameterType="Long">
+        delete
+        from key_workflow_detail
+        where id = #{id}
+    </delete>
+
+    <delete id="deleteKeyWorkflowDetailByIds" parameterType="String">
+        delete from key_workflow_detail where id in
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+</mapper>

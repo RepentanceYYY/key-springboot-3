@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tairui.function.mapper.KeyCabinetMapper">
+
+    <select id="selectKeyCabinetSummaryByUserId" resultType="com.tairui.function.domain.vo.KeyCabinetSummary">
+        SELECT s.id              AS keyCabinetId,
+               s.keyNumber       AS keyCabinetNumber,
+               s.cabinetName     AS keyCabinetName,
+               s.addressLocation as keyCabinetAddressLocation
+        FROM system_settings s
+                 INNER JOIN `user` u ON FIND_IN_SET(s.id, u.srttings)
+        WHERE u.id = #{userId}
+    </select>
+    <select id="selectAllKeyCabinet" resultType="com.tairui.function.domain.KeyCabinet">
+        SELECT id,
+               keyNumber,
+               cabinetName,
+               cabinetCapacity,
+               addressLocation,
+               adminPassword,
+               scheduledReboot,
+               rebootTime,
+               networkMode,
+               keyRequest,
+               borrowReview,
+               returnCycle,
+               returnTime,
+               timeoutReminder,
+               returnToHome,
+               voiceAnnouncement,
+               lastUpdateTime,
+               bindStatus
+        FROM system_settings;
+    </select>
+    <select id="selectKeyCabinetById" parameterType="java.lang.Integer" resultType="com.tairui.function.domain.KeyCabinet">
+        SELECT id,
+               keyNumber,
+               cabinetName,
+               cabinetCapacity,
+               addressLocation,
+               adminPassword,
+               scheduledReboot,
+               rebootTime,
+               networkMode,
+               keyRequest,
+               borrowReview,
+               returnCycle,
+               returnTime,
+               timeoutReminder,
+               returnToHome,
+               voiceAnnouncement,
+               lastUpdateTime,
+               bindStatus
+        FROM system_settings
+        WHERE id = #{keyCabinetId};
+    </select>
+    <select id="selectKeyCabinetSummary" resultType="com.tairui.function.domain.vo.KeyCabinetSummary">
+        SELECT s.id              AS keyCabinetId,
+               s.keyNumber       AS keyCabinetNumber,
+               s.cabinetName     AS keyCabinetName,
+               s.addressLocation as keyCabinetAddressLocation
+        FROM system_settings s;
+    </select>
+</mapper>
