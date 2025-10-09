@@ -175,6 +175,20 @@ export const dynamicRoutes = [
         }
       }
     ]
+  },
+  {
+    path: '/function/auth',
+    component: Layout,
+    hidden: true,
+    permissions: ['function:auth:query'],
+    children: [
+      {
+        path: 'index/:Id(\\d+)',
+        component: () => import('@/views/function/auth/index'),
+        name: 'authQuery',
+        meta: { title: '钥匙柜高级配置', activeMenu: '/function/auth' }
+      }
+    ]
   }
 ]
 
