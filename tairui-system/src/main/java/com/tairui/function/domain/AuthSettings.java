@@ -2,6 +2,8 @@ package com.tairui.function.domain;
 
 import com.tairui.common.annotation.Excel;
 import com.tairui.common.core.domain.BaseEntity;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
@@ -11,12 +13,14 @@ import org.apache.commons.lang3.builder.ToStringStyle;
  * @author tairui
  * @date 2025-07-29
  */
+@Data
+@EqualsAndHashCode(callSuper = true)
 public class AuthSettings extends BaseEntity
 {
     private static final long serialVersionUID = 1L;
 
     /**  */
-    private Long id;
+    private Long srttings;
 
     /** 人脸认证 */
     @Excel(name = "人脸认证")
@@ -53,111 +57,4 @@ public class AuthSettings extends BaseEntity
     /** 小屏幕 */
     @Excel(name = "小屏幕")
     private String smallScreen;
-
-    public void setId(Long id)
-    {
-        this.id = id;
-    }
-
-    public Long getId()
-    {
-        return id;
-    }
-    public void setFaceAuth(String faceAuth)
-    {
-        this.faceAuth = faceAuth;
-    }
-
-    public String getFaceAuth()
-    {
-        return faceAuth;
-    }
-    public void setLivenessAuth(String livenessAuth)
-    {
-        this.livenessAuth = livenessAuth;
-    }
-
-    public String getLivenessAuth()
-    {
-        return livenessAuth;
-    }
-    public void setFingerprintAuth(String fingerprintAuth)
-    {
-        this.fingerprintAuth = fingerprintAuth;
-    }
-
-    public String getFingerprintAuth()
-    {
-        return fingerprintAuth;
-    }
-    public void setCardAuth(String cardAuth)
-    {
-        this.cardAuth = cardAuth;
-    }
-
-    public String getCardAuth()
-    {
-        return cardAuth;
-    }
-    public void setPasswordAuth(String passwordAuth)
-    {
-        this.passwordAuth = passwordAuth;
-    }
-
-    public String getPasswordAuth()
-    {
-        return passwordAuth;
-    }
-    public void setAlcoholDetection(String alcoholDetection)
-    {
-        this.alcoholDetection = alcoholDetection;
-    }
-
-    public String getAlcoholDetection()
-    {
-        return alcoholDetection;
-    }
-    public void setAlcoholThreshold(String alcoholThreshold)
-    {
-        this.alcoholThreshold = alcoholThreshold;
-    }
-
-    public String getAlcoholThreshold()
-    {
-        return alcoholThreshold;
-    }
-    public void setMisalignmentMode(String misalignmentMode)
-    {
-        this.misalignmentMode = misalignmentMode;
-    }
-
-    public String getMisalignmentMode()
-    {
-        return misalignmentMode;
-    }
-    public void setSmallScreen(String smallScreen)
-    {
-        this.smallScreen = smallScreen;
-    }
-
-    public String getSmallScreen()
-    {
-        return smallScreen;
-    }
-
-    @Override
-    public String toString() {
-        return new ToStringBuilder(this,ToStringStyle.MULTI_LINE_STYLE)
-                .append("id", getId())
-                .append("faceAuth", getFaceAuth())
-                .append("livenessAuth", getLivenessAuth())
-                .append("fingerprintAuth", getFingerprintAuth())
-                .append("cardAuth", getCardAuth())
-                .append("passwordAuth", getPasswordAuth())
-                .append("alcoholDetection", getAlcoholDetection())
-                .append("alcoholThreshold", getAlcoholThreshold())
-                .append("misalignmentMode", getMisalignmentMode())
-                .append("smallScreen", getSmallScreen())
-                .toString();
-    }
 }

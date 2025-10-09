@@ -157,6 +157,24 @@ export const dynamicRoutes = [
         meta: { title: '修改生成配置', activeMenu: '/tool/gen' }
       }
     ]
+  },
+  {
+    path: '/keyConfiguration/query',
+    component: Layout,
+    hidden: true,
+    permissions: ['function:keyConfiguration:query'],
+    children: [
+      {
+        path: 'index/:Id(\\d+)',
+        component: () => import('@/views/function/keyConfiguration/query/index'),
+        name: 'KeyConfigurationQuery',
+        meta: {
+          title: '钥匙柜配置详情',
+          activeMenu: '/function/keyConfiguration',
+          perms: ['function:keyConfiguration:query']
+        }
+      }
+    ]
   }
 ]
 

@@ -5,7 +5,7 @@
 <mapper namespace="com.tairui.function.mapper.AuthSettingsMapper">
 
     <resultMap type="AuthSettings" id="AuthSettingsResult">
-        <result property="id"    column="id"    />
+        <result property="srttings"    column="srttings"    />
         <result property="faceAuth"    column="faceAuth"    />
         <result property="livenessAuth"    column="livenessAuth"    />
         <result property="fingerprintAuth"    column="fingerprintAuth"    />
@@ -38,13 +38,13 @@
 
     <select id="selectAuthSettingsById" parameterType="Long" resultMap="AuthSettingsResult">
         <include refid="selectAuthSettingsVo"/>
-        where id = #{id}
+        where srttings = #{srttings}
     </select>
 
     <insert id="insertAuthSettings" parameterType="AuthSettings">
         insert into auth_settings
         <trim prefix="(" suffix=")" suffixOverrides=",">
-            <if test="id != null">id,</if>
+            <if test="srttings != null">srttings,</if>
             <if test="faceAuth != null">faceAuth,</if>
             <if test="livenessAuth != null">livenessAuth,</if>
             <if test="fingerprintAuth != null">fingerprintAuth,</if>
@@ -56,7 +56,7 @@
             <if test="smallScreen != null">smallScreen,</if>
         </trim>
         <trim prefix="values (" suffix=")" suffixOverrides=",">
-            <if test="id != null">#{id},</if>
+            <if test="srttings != null">#{srttings},</if>
             <if test="faceAuth != null">#{faceAuth},</if>
             <if test="livenessAuth != null">#{livenessAuth},</if>
             <if test="fingerprintAuth != null">#{fingerprintAuth},</if>
@@ -82,16 +82,16 @@
             <if test="misalignmentMode != null">misalignmentMode = #{misalignmentMode},</if>
             <if test="smallScreen != null">smallScreen = #{smallScreen},</if>
         </trim>
-        where id = #{id}
+        where srttings = #{srttings}
     </update>
 
     <delete id="deleteAuthSettingsById" parameterType="Long">
-        delete from auth_settings where id = #{id}
+        delete from auth_settings where srttings = #{srttings}
     </delete>
 
     <delete id="deleteAuthSettingsByIds" parameterType="String">
-        delete from auth_settings where id in
-        <foreach item="id" collection="array" open="(" separator="," close=")">
+        delete from auth_settings where srttings in
+        <foreach item="srttings" collection="array" open="(" separator="," close=")">
             #{id}
         </foreach>
     </delete>

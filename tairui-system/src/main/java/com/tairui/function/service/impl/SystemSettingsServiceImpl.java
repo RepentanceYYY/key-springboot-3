@@ -80,7 +80,7 @@ public class SystemSettingsServiceImpl implements ISystemSettingsService
         }
         int id = systemSettingsMapper.lastInsertId();
         AuthSettings authSettings = new AuthSettings();
-        authSettings.setId((long) id);
+        authSettings.setSrttings((long) id);
         return   iAuthSettingsService.insertAuthSettings(authSettings);
     }
 

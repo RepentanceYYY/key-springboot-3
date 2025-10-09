@@ -25,12 +25,15 @@ public class RedisKeyExpiredListener implements MessageListener {
         if (expiredKey.startsWith("await_approval:")) {
             Integer keyWorkflowId = Integer.valueOf(expiredKey.substring("await_approval:".length()));
             KeyWorkflow keyWorkflow = keyWorkflowService.selectKeyWorkflowById(keyWorkflowId.longValue());
+            if (keyWorkflow == null) {
+                return;
+            }
             KeyApprovalDto keyApprovalDto = new KeyApprovalDto();
             keyApprovalDto.setKeyWorkflowId(keyWorkflowId);
             keyApprovalDto.setApprovalUserId(keyWorkflow.getApprovalUserId().intValue());
             keyApprovalDto.setApprovalAction(3);
             keyApprovalDto.setApprovalComment("超时未审批");
-            keyFromAppService.keyApproval(keyApprovalDto,false);
+            keyFromAppService.keyApproval(keyApprovalDto, false);
         }
     }
 }
