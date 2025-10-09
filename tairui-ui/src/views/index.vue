@@ -1,6 +1,6 @@
 <template>
   <div class="app-container home">
-
+    <h1>你好，世界！</h1>
   </div>
 </template>
 

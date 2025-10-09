@@ -67,7 +67,7 @@
                       :class="{ 'error-input': errors.faceAuth }"
                     >
                       <el-option
-                        v-for="dict in dict.type.key_cabinet_status"
+                        v-for="dict in key_cabinet_status"
                         :key="dict.value"
                         :label="dict.label"
                         :value="dict.value"
@@ -96,7 +96,7 @@
                       :class="{ 'error-input': errors.passwordAuth }"
                     >
                       <el-option
-                        v-for="dict in dict.type.key_cabinet_status"
+                        v-for="dict in key_cabinet_status"
                         :key="dict.value"
                         :label="dict.label"
                         :value="dict.value"
@@ -128,7 +128,7 @@
                       :class="{ 'error-input': errors.fingerprintAuth }"
                     >
                       <el-option
-                        v-for="dict in dict.type.key_cabinet_status"
+                        v-for="dict in key_cabinet_status"
                         :key="dict.value"
                         :label="dict.label"
                         :value="dict.value"
@@ -157,7 +157,7 @@
                       :class="{ 'error-input': errors.cardAuth }"
                     >
                       <el-option
-                        v-for="dict in dict.type.key_cabinet_status"
+                        v-for="dict in key_cabinet_status"
                         :key="dict.value"
                         :label="dict.label"
                         :value="dict.value"
@@ -206,7 +206,7 @@
                   :class="{ 'error-input': errors.livenessAuth }"
                 >
                   <el-option
-                    v-for="dict in dict.type.key_cabinet_status"
+                    v-for="dict in key_cabinet_status"
                     :key="dict.value"
                     :label="dict.label"
                     :value="dict.value"
@@ -235,7 +235,7 @@
                   :class="{ 'error-input': errors.misalignmentMode }"
                 >
                   <el-option
-                    v-for="dict in dict.type.key_cabinet_status"
+                    v-for="dict in key_cabinet_status"
                     :key="dict.value"
                     :label="dict.label"
                     :value="dict.value"
@@ -267,7 +267,7 @@
                   :class="{ 'error-input': errors.alcoholDetection }"
                 >
                   <el-option
-                    v-for="dict in dict.type.key_cabinet_status"
+                    v-for="dict in key_cabinet_status"
                     :key="dict.value"
                     :label="dict.label"
                     :value="dict.value"
@@ -337,7 +337,7 @@
                     :class="{ 'error-input': errors.smallScreen }"
                   >
                     <el-option
-                      v-for="dict in dict.type.key_cabinet_status"
+                      v-for="dict in key_cabinet_status"
                       :key="dict.value"
                       :label="dict.label"
                       :value="dict.value"
@@ -354,234 +354,159 @@
   </div>
 </template>
 
-<script>
+<script setup>
 import { ref, reactive, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import {
-  Setting,
-  RefreshRight,
-  Check,
-  Tools,
-  InfoFilled,
-  Monitor
-} from '@element-plus/icons-vue'
-
+import { getCurrentInstance } from 'vue'
 import { getAuth, updateAuth } from "@/api/function/auth"
 
-export default {
-  name: "Auth",
-  dicts: ['key_cabinet_status'],
-  setup() {
-    const route = useRoute()
-    
-    // 响应式数据
-    const saving = ref(false)
-    const hasChanged = ref(false)
-    
-    // 原始设置数据，用于重置
-    const originalSettings = reactive({
-      faceAuth: '',
-      livenessAuth: '',
-      fingerprintAuth: '',
-      cardAuth: '',
-      passwordAuth: '',
-      alcoholDetection: '',
-      alcoholThreshold: '',
-      misalignmentMode: '',
-      smallScreen: ''
-    })
-    
-    // 当前设置数据
-    const authSettings = reactive({
-      faceAuth: '',
-      livenessAuth: '',
-      fingerprintAuth: '',
-      cardAuth: '',
-      passwordAuth: '',
-      alcoholDetection: '',
-      alcoholThreshold: '',
-      misalignmentMode: '',
-      smallScreen: ''
-    })
-    
-    // 错误信息对象
-    const errors = reactive({
-      faceAuth: '',
-      livenessAuth: '',
-      fingerprintAuth: '',
-      cardAuth: '',
-      passwordAuth: '',
-      alcoholDetection: '',
-      alcoholThreshold: '',
-      misalignmentMode: '',
-      smallScreen: ''
-    })
-    
-    // 字典数据（示例）
-    const dict = reactive({
-      type: {
-        key_cabinet_status: [
-          { value: 'enable', label: '启用' },
-          { value: 'disable', label: '禁用' }
-        ]
-      }
-    })
+// 路由对象
+const route = useRoute()
+const { proxy } = getCurrentInstance();
+const { key_cabinet_status } = proxy.useDict("key_cabinet_status");
 
-    // 加载设置数据
-    const getAuthId = () => {
-      const id = route.params?.Id
-      getAuth(id).then(response => {
-        Object.assign(authSettings, response.data)
-        Object.assign(originalSettings, response.data)
-      })
-    }
+// 响应式状态
+const saving = ref(false)
+const hasChanged = ref(false)
 
-    // 清除所有错误信息
-    const clearErrors = () => {
-      Object.keys(errors).forEach(key => {
-        errors[key] = ''
-      })
-    }
+// 原始设置数据
+const originalSettings = reactive({
+  faceAuth: '',
+  livenessAuth: '',
+  fingerprintAuth: '',
+  cardAuth: '',
+  passwordAuth: '',
+  alcoholDetection: '',
+  alcoholThreshold: '',
+  misalignmentMode: '',
+  smallScreen: ''
+})
 
-    // 滚动到第一个错误位置
-    const scrollToFirstError = () => {
-      const firstError = document.querySelector('.text-red-500')
-      if (firstError) {
-        firstError.scrollIntoView({ behavior: 'smooth', block: 'center' })
-      }
-    }
+// 当前设置数据
+const authSettings = reactive({
+  faceAuth: '',
+  livenessAuth: '',
+  fingerprintAuth: '',
+  cardAuth: '',
+  passwordAuth: '',
+  alcoholDetection: '',
+  alcoholThreshold: '',
+  misalignmentMode: '',
+  smallScreen: ''
+})
 
-    // 检查是否有变化
-    const checkChanges = () => {
-      hasChanged.value = JSON.stringify(authSettings) !== JSON.stringify(originalSettings)
-    }
+// 错误信息对象
+const errors = reactive({
+  faceAuth: '',
+  livenessAuth: '',
+  fingerprintAuth: '',
+  cardAuth: '',
+  passwordAuth: '',
+  alcoholDetection: '',
+  alcoholThreshold: '',
+  misalignmentMode: '',
+  smallScreen: ''
+})
 
-    // 处理下拉框变化
-    const handleSelectChange = (field) => {
-      // 清除对应字段的错误信息
-      if (errors[field]) {
-        errors[field] = ''
-      }
-      // 处理酒精检测依赖关系
-      if (field === 'alcoholDetection') {
-        if (authSettings.alcoholDetection !== 'enable') {
-          errors.alcoholThreshold = ''
-        }
-      }
-      checkChanges()
-    }
-
-    // 保存设置
-    const saveSettings = () => {
-      // 重置错误信息
-      clearErrors()
-      // 表单验证
-      let isValid = true
-
-      // 认证方式验证
-      if (!authSettings.faceAuth) {
-        errors.faceAuth = '请选择人脸认证状态'
-        isValid = false
-      }
-      if (!authSettings.livenessAuth) {
-        errors.livenessAuth = '请选择活体认证状态'
-        isValid = false
-      }
-      if (!authSettings.fingerprintAuth) {
-        errors.fingerprintAuth = '请选择指纹认证状态'
-        isValid = false
-      }
-      if (!authSettings.cardAuth) {
-        errors.cardAuth = '请选择刷卡认证状态'
-        isValid = false
-      }
-      if (!authSettings.passwordAuth) {
-        errors.passwordAuth = '请选择密码认证状态'
-        isValid = false
-      }
-
-      // 酒精检测相关验证
-      if (!authSettings.alcoholDetection) {
-        errors.alcoholDetection = '请选择酒精检测状态'
-        isValid = false
-      } else if (authSettings.alcoholDetection === 'enable' && !authSettings.alcoholThreshold) {
-        errors.alcoholThreshold = '请输入酒精检测阈值'
-        isValid = false
-      }
-
-      // 其他设置验证
-      if (!authSettings.misalignmentMode) {
-        errors.misalignmentMode = '请选择错位模式状态'
-        isValid = false
-      }
-      if (!authSettings.smallScreen) {
-        errors.smallScreen = '请选择小屏幕模式状态'
-        isValid = false
-      }
-
-      // 如果验证不通过，不进行保存操作
-      if (!isValid) {
-        // 滚动到第一个错误位置
-        scrollToFirstError()
-        return
-      }
-
-      // 保存操作
-      saving.value = true
-      updateAuth(authSettings).then(response => {
-        Object.assign(originalSettings, authSettings)
-        ElMessage.success('设置保存成功')
-        Object.assign(authSettings, response.data)
-        hasChanged.value = false
-        saving.value = false
-        
-        // 注意：这里需要根据您的路由管理方式调整
-        // const id = route.params?.Id
-        // const obj = { path: "/keyConfiguration/query/index/"+id }
-        // this.$tab.closeOpenPage(obj)
-      }).catch(error => {
-        saving.value = false
-        ElMessage.error('保存失败，请重试')
-      })
-    }
-
-    // 重置表单
-    const resetForm = () => {
-      ElMessageBox.confirm('确定要恢复默认设置吗？当前修改将会丢失', '提示', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning'
-      }).then(() => {
-        getAuthId()
-        clearErrors()
-        hasChanged.value = false
-        ElMessage.success('已恢复默认设置')
-      }).catch(() => {
-        // 取消操作
-      })
-    }
-
-    // 生命周期
-    onMounted(() => {
-      getAuthId()
-    })
-
-    return {
-      saving,
-      hasChanged,
-      originalSettings,
-      authSettings,
-      errors,
-      dict,
-      getAuthId,
-      saveSettings,
-      resetForm,
-      handleSelectChange,
-      clearErrors
-    }
+// 字典示例
+const dict = reactive({
+  type: {
+    key_cabinet_status: [
+      { value: 'enable', label: '启用' },
+      { value: 'disable', label: '禁用' }
+    ]
   }
+})
+
+// 加载设置
+const getAuthId = () => {
+  const id = route.params?.Id
+  getAuth(id).then(response => {
+    Object.assign(authSettings, response.data)
+    Object.assign(originalSettings, response.data)
+  })
 }
+
+// 清除错误
+const clearErrors = () => {
+  Object.keys(errors).forEach(key => {
+    errors[key] = ''
+  })
+}
+
+// 滚动到第一个错误
+const scrollToFirstError = () => {
+  const firstError = document.querySelector('.text-red-500')
+  if (firstError) firstError.scrollIntoView({ behavior: 'smooth', block: 'center' })
+}
+
+// 检查表单变化
+const checkChanges = () => {
+  hasChanged.value = JSON.stringify(authSettings) !== JSON.stringify(originalSettings)
+}
+
+// 下拉框变化
+const handleSelectChange = (field) => {
+  if (errors[field]) errors[field] = ''
+  if (field === 'alcoholDetection' && authSettings.alcoholDetection !== 'enable') {
+    errors.alcoholThreshold = ''
+  }
+  checkChanges()
+}
+
+// 保存设置
+const saveSettings = () => {
+  clearErrors()
+  let isValid = true
+
+  if (!authSettings.faceAuth) { errors.faceAuth = '请选择人脸认证状态'; isValid = false }
+  if (!authSettings.livenessAuth) { errors.livenessAuth = '请选择活体认证状态'; isValid = false }
+  if (!authSettings.fingerprintAuth) { errors.fingerprintAuth = '请选择指纹认证状态'; isValid = false }
+  if (!authSettings.cardAuth) { errors.cardAuth = '请选择刷卡认证状态'; isValid = false }
+  if (!authSettings.passwordAuth) { errors.passwordAuth = '请选择密码认证状态'; isValid = false }
+
+  if (!authSettings.alcoholDetection) { errors.alcoholDetection = '请选择酒精检测状态'; isValid = false }
+  else if (authSettings.alcoholDetection === 'enable' && !authSettings.alcoholThreshold) {
+    errors.alcoholThreshold = '请输入酒精检测阈值'; isValid = false
+  }
+
+  if (!authSettings.misalignmentMode) { errors.misalignmentMode = '请选择错位模式状态'; isValid = false }
+  if (!authSettings.smallScreen) { errors.smallScreen = '请选择小屏幕模式状态'; isValid = false }
+
+  if (!isValid) { scrollToFirstError(); return }
+
+  saving.value = true
+  updateAuth(authSettings).then(response => {
+    Object.assign(originalSettings, authSettings)
+    Object.assign(authSettings, response.data)
+    hasChanged.value = false
+    saving.value = false
+    ElMessage.success('设置保存成功')
+  }).catch(() => {
+    saving.value = false
+    ElMessage.error('保存失败，请重试')
+  })
+}
+
+// 重置表单
+const resetForm = () => {
+  ElMessageBox.confirm('确定要恢复默认设置吗？当前修改将会丢失', '提示', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning'
+  }).then(() => {
+    getAuthId()
+    clearErrors()
+    hasChanged.value = false
+    ElMessage.success('已恢复默认设置')
+  }).catch(() => {})
+}
+
+// 组件挂载时加载数据
+onMounted(() => {
+  getAuthId()
+})
 </script>
 
 <style scoped>

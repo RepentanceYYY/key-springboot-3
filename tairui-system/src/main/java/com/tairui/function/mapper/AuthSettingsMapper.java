@@ -15,10 +15,10 @@ public interface AuthSettingsMapper
     /**
      * 查询高级配置
      *
-     * @param id 高级配置主键
+     * @param srttings 高级配置主键
      * @return 高级配置
      */
-    public AuthSettings selectAuthSettingsById(Long id);
+    public AuthSettings selectAuthSettingsById(Long srttings);
 
     /**
      * 查询高级配置列表

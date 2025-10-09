@@ -18,7 +18,7 @@
     </resultMap>
 
     <sql id="selectAuthSettingsVo">
-        select id, faceAuth, livenessAuth, fingerprintAuth, cardAuth, passwordAuth, alcoholDetection, alcoholThreshold, misalignmentMode, smallScreen from auth_settings
+        select srttings, faceAuth, livenessAuth, fingerprintAuth, cardAuth, passwordAuth, alcoholDetection, alcoholThreshold, misalignmentMode, smallScreen from auth_settings
     </sql>
 
     <select id="selectAuthSettingsList" parameterType="AuthSettings" resultMap="AuthSettingsResult">
