@@ -148,7 +148,7 @@ const open = ref(false)
 const queryParams = reactive({
   pageNum: 1,
   pageSize: 10,
-  bindStatus: "0",
+  bindStatus: null,
   keyNumber: null,
   cabinetName: null,
 })
@@ -244,7 +244,7 @@ const handleAdd = async () => {
   resetForm('form')
   const res = await getNewKeyNumber();
 
-  form.keyNumber = res.data;
+  form.keyNumber = String(res.data);
 
   open.value = true
   title.value = "添加钥匙柜配置"
