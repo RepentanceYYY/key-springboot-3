@@ -29,7 +29,7 @@
       </el-button>
     </div>
 
-    <el-row :gutter="20">
+    <el-row :gutter="20" class="card">
       <el-col :span="24">
         <!-- 主要设置卡片 - 增强视觉层次感 -->
         <el-card shadow="hover" class="transition-all duration-300 border-0 mb-6 overflow-hidden">
@@ -173,7 +173,7 @@
       </el-col>
     </el-row>
     
-    <el-row :gutter="20">
+    <el-row :gutter="20" class="card">
       <el-col :span="24">
         <el-card shadow="hover" class="transition-all duration-300 border-0">
           <!-- 高级设置组 -->
@@ -303,7 +303,7 @@
       </el-col>
     </el-row>
 
-    <el-row :gutter="20">
+    <el-row :gutter="20" class="card">
       <el-col :span="24">
         <el-card shadow="hover" class="transition-all duration-300 border-0">
           <!-- 显示设置组 -->
@@ -510,6 +510,12 @@ onMounted(() => {
 </script>
 
 <style scoped>
+
+.card{
+  margin-bottom: 10px;
+  margin-top: 10px;
+}
+
 /* 基础样式增强  父组件中修改子组件的样式  */
 :deep(.el-card__header) {
   border-bottom: 1px solid #f2f3f5 !important;

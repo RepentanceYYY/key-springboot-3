@@ -60,7 +60,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <where>
             <if test="keyNumber != null "> and ss.keyNumber like concat('%', #{keyNumber}, '%')</if>
             <if test="cabinetName != null  and cabinetName != ''"> and ss.cabinetName like concat('%', #{cabinetName}, '%')</if>
-            <if test="bindStatus != null  and bindStatus != ''"> and ss.bindStatus =  #{bindStatus}</if>
+            <if test="bindStatus != null"> and ss.bindStatus =  #{bindStatus}</if>
         </where>
         GROUP BY
         ss.id

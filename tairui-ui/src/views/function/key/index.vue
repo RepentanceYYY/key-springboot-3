@@ -117,7 +117,7 @@
           {{ scope.row.userNames }}
         </template>
       </el-table-column>
-      <el-table-column label="地理位置" align="center" prop="usageLocation">
+      <el-table-column label="使用位置" align="center" prop="usageLocation">
         <template #default="scope">
           <span v-if="scope.row.usageLocation">{{ scope.row.usageLocation }}</span>
           <span v-else style="color:red">未填写</span>
@@ -130,7 +130,7 @@
           <dict-tag :options="function_key_status" :value="scope.row.status" />
         </template>
       </el-table-column>
-      <el-table-column label="借用人" align="center" prop="lastControlUser">
+      <el-table-column label="最后借用人" align="center" prop="lastControlUser">
         <template #default="scope">
           <span v-if="scope.row.status === 'borrowed'">{{ scope.row.lastControlUser }}</span>
         </template>
