@@ -83,6 +83,7 @@ public interface KeyWorkflowDetailMapper {
 
     /**
      * 查询用户的指定申请类型的所有工作流详情,每个(钥匙柜+钥匙联合)的申请只要最新一行
+     *
      * @param applyUserId
      * @param applyType
      * @return
@@ -104,5 +105,27 @@ public interface KeyWorkflowDetailMapper {
      * @return 结果
      */
     public int deleteKeyWorkflowDetailByIds(Long[] ids);
+
+    /**
+     * 通过参数查询申请详情列表
+     *
+     * @param keyCabinetIds 钥匙柜id集合
+     * @param status        状态集合
+     * @param applyType     申请类型
+     * @return
+     */
+
+    public List<KeyWorkflowDetail> selectKeyWorkflowDetailByKeyCabinetIdsAndStatus(@Param("keyCabinetIds") List<Long> keyCabinetIds, @Param("status") List<Integer> status, @Param("applyType") Integer applyType);
+
+    /**
+     * 批量更新审批流详情状态
+     *
+     * @param ids    审批流详情id集合
+     * @param status 目标状态
+     * @return
+     */
+
+    public int updateKeyWorkflowDetailStatusByIds(@Param("ids") List<Long> ids, @Param("status") int status);
+
 
 }

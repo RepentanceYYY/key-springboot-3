@@ -86,6 +86,28 @@
         where kw.apply_user_id = #{applyUserId}
           and kwd.apply_type = #{applyType}
     </select>
+    <select id="selectKeyWorkflowDetailByKeyCabinetIdsAndStatus"
+            resultMap="KeyWorkflowDetailResult">
+        <include refid="selectKeyWorkflowDetailVo"/>
+        <where>
+            1 = 1
+            <if test="applyType !=null">
+                AND apply_type = #{applyType}
+            </if>
+            <if test="keyCabinetIds !=null and keyCabinetIds.size() >0">
+                AND key_cabinet_id IN
+                <foreach collection="keyCabinetIds" item="id" open="(" separator="," close=")">
+                    #{id}
+                </foreach>
+            </if>
+            <if test="status !=null and status.size() > 0">
+                AND status IN
+                <foreach collection="status" item="s" open="(" separator="," close=")">
+                    #{s}
+                </foreach>
+            </if>
+        </where>
+    </select>
 
     <insert id="insertKeyWorkflowDetail" parameterType="KeyWorkflowDetail" useGeneratedKeys="true" keyProperty="id">
         insert into key_workflow_detail
@@ -145,6 +167,12 @@
             <if test="updateTime != null">update_time = #{updateTime},</if>
         </trim>
         where id = #{id}
+    </update>
+    <update id="updateKeyWorkflowDetailStatusByIds">
+        update key_workflow_detail set status = #{status} where id IN
+        <foreach collection="ids" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
     </update>
 
     <delete id="deleteKeyWorkflowDetailById" parameterType="Long">

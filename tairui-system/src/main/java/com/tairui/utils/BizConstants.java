@@ -5,9 +5,13 @@ package com.tairui.utils;
  */
 public class BizConstants {
     /**
-     * 申请有效期(分钟)
+     * 钥匙申请有效期(分钟)
      */
     public static final int APPLY_TIMEOUT_MINUTES = 120;
+    /**
+     * 申请在redis中缓存的key的前缀
+     */
+    public static final String APPLY_CACHE_KEY_PREFIX = "await_approval:";
     /**
      * 绑定申请类型值
      */
@@ -39,15 +43,15 @@ public class BizConstants {
     /**
      * 同意
      */
-    public static final Integer APPROVED = 1;
+    public static final int APPROVED = 1;
     /**
      * 拒绝
      */
-    public static final Integer REJECTED = 2;
+    public static final int REJECTED = 2;
     /**
      * 超时
      */
-    public static final Integer TIMEOUT = 3;
+    public static final int TIMEOUT = 3;
     /**
      * 钥匙在位
      */

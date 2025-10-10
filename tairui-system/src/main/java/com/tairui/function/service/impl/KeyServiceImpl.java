@@ -3,18 +3,21 @@ package com.tairui.function.service.impl;
 import com.alibaba.fastjson2.JSONObject;
 import com.tairui.common.constant.UserConstants;
 import com.tairui.common.core.domain.entity.User;
+import com.tairui.common.core.redis.RedisCache;
 import com.tairui.common.utils.StringUtils;
 import com.tairui.function.domain.Key;
+import com.tairui.function.domain.KeyWorkflow;
+import com.tairui.function.domain.KeyWorkflowDetail;
 import com.tairui.function.domain.SystemSettings;
 import com.tairui.function.domain.vo.KeyAppVo;
-import com.tairui.function.mapper.KeyMapper;
-import com.tairui.function.mapper.SystemSettingsMapper;
-import com.tairui.function.mapper.UserMapper;
+import com.tairui.function.mapper.*;
 import com.tairui.function.service.IKeyService;
 import com.tairui.system.mapper.SysOperLogMapper;
+import com.tairui.utils.BizConstants;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -26,8 +29,7 @@ import java.util.stream.Collectors;
  * @date 2025-07-30
  */
 @Service
-public class KeyServiceImpl implements IKeyService
-{
+public class KeyServiceImpl implements IKeyService {
     @Autowired
     private KeyMapper keyMapper;
     @Autowired
@@ -35,7 +37,14 @@ public class KeyServiceImpl implements IKeyService
     @Autowired
     private SystemSettingsMapper systemSettingsMapper;
     @Autowired
+    private KeyWorkflowDetailMapper keyWorkflowDetailMapper;
+    @Autowired
+    private KeyWorkflowMapper keyWorkflowMapper;
+    @Autowired
+    private RedisCache redisCache;
+    @Autowired
     private SysOperLogMapper operLogMapper;
+
     /**
      * 查询钥匙
      *
@@ -43,8 +52,7 @@ public class KeyServiceImpl implements IKeyService
      * @return 钥匙
      */
     @Override
-    public Key selectKeyById(Long id)
-    {
+    public Key selectKeyById(Long id) {
         return keyMapper.selectKeyById(id);
     }
 
@@ -55,8 +63,7 @@ public class KeyServiceImpl implements IKeyService
      * @return 钥匙
      */
     @Override
-    public List<Key> selectKeyList(Key key)
-    {
+    public List<Key> selectKeyList(Key key) {
         return keyMapper.selectKeyList(key);
     }
 
@@ -67,8 +74,7 @@ public class KeyServiceImpl implements IKeyService
      * @return 结果
      */
     @Override
-    public int insertKey(Key key)
-    {
+    public int insertKey(Key key) {
         return keyMapper.insertKey(key);
     }
 
@@ -79,15 +85,14 @@ public class KeyServiceImpl implements IKeyService
      * @return 结果
      */
     @Override
-    public int updateKey(Key key)
-    {
+    public int updateKey(Key key) {
         keyMapper.deleteKeyUser(key.getId());
         if (key.getUserId() != null && !key.getUserId().isEmpty()) {
             // 按逗号分割字符串，得到字符串数组
             String[] userIds = key.getUserId().split(",");
             for (int i = 0; i < userIds.length; i++) {
                 long userId = Long.parseLong(userIds[i].trim());
-                keyMapper.insertKeyUser(key.getId(),userId);
+                keyMapper.insertKeyUser(key.getId(), userId);
             }
         }
         key.setStatus("available");
@@ -101,8 +106,7 @@ public class KeyServiceImpl implements IKeyService
      * @return 结果
      */
     @Override
-    public int deleteKeyByIds(Long[] ids)
-    {
+    public int deleteKeyByIds(Long[] ids) {
         return keyMapper.deleteKeyByIds(ids);
     }
 
@@ -113,15 +117,14 @@ public class KeyServiceImpl implements IKeyService
      * @return 结果
      */
     @Override
-    public int deleteKeyById(Long id)
-    {
+    public int deleteKeyById(Long id) {
         return keyMapper.deleteKeyById(id);
     }
 
     /**
-     *  钥匙初始化
+     * 钥匙初始化
      *
-     * @param keyId  钥匙ID
+     * @param keyId 钥匙ID
      * @return
      */
     @Override
@@ -140,8 +143,7 @@ public class KeyServiceImpl implements IKeyService
     public boolean checkKeyUnique(Key key) {
         Long id = StringUtils.isNull(key.getId()) ? -1L : key.getId();
         SystemSettings info = keyMapper.checkKeyUnique(key);
-        if (StringUtils.isNotNull(info) && info.getId().longValue() != id.longValue())
-        {
+        if (StringUtils.isNotNull(info) && info.getId().longValue() != id.longValue()) {
             return UserConstants.NOT_UNIQUE;
         }
         return UserConstants.UNIQUE;
@@ -163,15 +165,37 @@ public class KeyServiceImpl implements IKeyService
     }
 
 
-
     /**
      * 一键解绑所有钥匙
+     *
      * @param srttings
      * @return
      */
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public int batchUnBindKeys(String srttings) {
-        return keyMapper.batchUnBindKeys(srttings);
+        //解绑之前，结束所有解绑的柜子下的带结束钥匙借用申请
+        List<Long> keyCabinetIds = StringUtils.strToLongList(srttings, ",");
+        List<Integer> status = Arrays.asList(BizConstants.PENDING_APPROVAL, BizConstants.BORROW_APPROVED_NOT_PICKED);
+        List<KeyWorkflowDetail> keyWorkflowDetails = keyWorkflowDetailMapper.selectKeyWorkflowDetailByKeyCabinetIdsAndStatus(keyCabinetIds, status, BizConstants.APPLY_TYPE_BORROW);
+        if (keyWorkflowDetails.isEmpty()) {
+            return keyMapper.batchUnBindKeys(srttings);
+        }
+        List<Long> awaitApprovalWorkflowIds = keyWorkflowDetails.stream().map(x -> x.getKeyWorkflowId()).collect(Collectors.toSet()).stream().toList();
+        List<Long> awaitEndWorkflowDetailIds = keyWorkflowDetails.stream().map(y -> y.getId()).collect(Collectors.toList());
+        keyWorkflowDetailMapper.updateKeyWorkflowDetailStatusByIds(awaitEndWorkflowDetailIds, BizConstants.BIND_END_DETAIL_STATUS);
+        KeyWorkflow keyWorkflow = new KeyWorkflow();
+        keyWorkflow.setCurrentStatus(Long.valueOf(BizConstants.REJECTED));
+        keyWorkflow.setApprovalTime(new Date());
+        keyWorkflow.setApprovalComment("因后台解绑而自动拒绝申请");
+        keyWorkflowMapper.updateKeyWorkflowCurrentStatusByWorkflowIds(awaitApprovalWorkflowIds, keyWorkflow);
+        //解绑
+        int result = keyMapper.batchUnBindKeys(srttings);
+        //删除相关的挂起的申请流id缓存
+        for (Long tmpId : awaitApprovalWorkflowIds) {
+            redisCache.deleteObject(BizConstants.APPLY_CACHE_KEY_PREFIX + tmpId);
+        }
+        return result;
     }
 
     @Override

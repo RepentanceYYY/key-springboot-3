@@ -88,4 +88,13 @@ public interface KeyWorkflowMapper {
      */
     List<KeyWorkflowDetailAndKeyPOJO> selectWorkflowDetailKeyWorkflowDetailAndKeyPOJOByTargetUserId(KeyWorkflowDetailAndKeyPOJO detailAndKeyAllInfo);
 
+    /**
+     * 批量审批申请
+     *
+     * @param workflowIds 申请流id集合
+     * @param keyWorkflow 审批信息
+     * @return
+     */
+    int updateKeyWorkflowCurrentStatusByWorkflowIds(@Param("workflowIds") List<Long> workflowIds, @Param("keyWorkflow") KeyWorkflow keyWorkflow);
+
 }

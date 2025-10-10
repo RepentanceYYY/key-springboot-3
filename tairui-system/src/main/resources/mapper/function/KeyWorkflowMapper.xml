@@ -175,6 +175,20 @@
         </trim>
         where id = #{id}
     </update>
+    <update id="updateKeyWorkflowCurrentStatusByWorkflowIds">
+        <if test="workflowIds != null and workflowIds.size() > 0">
+            update key_workflow
+            <trim prefix="SET" suffixOverrides=",">
+                <if test="keyWorkflow.approvalTime != null">approval_time = #{keyWorkflow.approvalTime},</if>
+                <if test="keyWorkflow.approvalComment != null">approval_comment = #{keyWorkflow.approvalComment},</if>
+                <if test="keyWorkflow.currentStatus != null">current_status = #{keyWorkflow.currentStatus},</if>
+            </trim>
+            where id IN
+            <foreach collection="workflowIds" item="id" open="(" separator="," close=")">
+                #{id}
+            </foreach>
+        </if>
+    </update>
 
     <delete id="deleteKeyWorkflowById" parameterType="Long">
         delete

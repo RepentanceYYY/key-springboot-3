@@ -4,6 +4,7 @@ import com.tairui.function.domain.KeyWorkflow;
 import com.tairui.function.domain.dto.KeyApprovalDto;
 import com.tairui.function.service.IKeyFromAppService;
 import com.tairui.function.service.IKeyWorkflowService;
+import com.tairui.utils.BizConstants;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.connection.Message;
 import org.springframework.data.redis.connection.MessageListener;
@@ -22,10 +23,11 @@ public class RedisKeyExpiredListener implements MessageListener {
     public void onMessage(Message message, byte[] pattern) {
         String expiredKey = new String(message.getBody(), StandardCharsets.UTF_8);
         //  申请超时未审批
-        if (expiredKey.startsWith("await_approval:")) {
-            Integer keyWorkflowId = Integer.valueOf(expiredKey.substring("await_approval:".length()));
+        if (expiredKey.startsWith(BizConstants.APPLY_CACHE_KEY_PREFIX)) {
+            Integer keyWorkflowId = Integer.valueOf(expiredKey.substring(BizConstants.APPLY_CACHE_KEY_PREFIX.length()));
             KeyWorkflow keyWorkflow = keyWorkflowService.selectKeyWorkflowById(keyWorkflowId.longValue());
-            if (keyWorkflow == null) {
+            //如果不是待审批状态，就不继续执行了
+            if (keyWorkflow == null || !keyWorkflow.getCurrentStatus().equals(BizConstants.PENDING_APPROVAL)) {
                 return;
             }
             KeyApprovalDto keyApprovalDto = new KeyApprovalDto();

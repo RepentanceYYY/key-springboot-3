@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tairui.common.core.domain.entity.User;
 import com.tairui.common.core.redis.RedisCache;
+import com.tairui.common.utils.StringUtils;
 import com.tairui.enums.ApplyType;
 import com.tairui.enums.ApprovalAction;
 import com.tairui.function.domain.*;
@@ -139,7 +140,7 @@ public class KeyFromAppService implements IKeyFromAppService {
         keyWorkflowDetailMapper.insertBatchKeyWorkflowDetail(keyWorkflowDetailList);
         try {
             String value = objectMapper.writeValueAsString(keyWorkflow);
-            redisCache.redisTemplate.opsForValue().set("await_approval:" + keyWorkflowId, value, BizConstants.APPLY_TIMEOUT_MINUTES, TimeUnit.MINUTES);
+            redisCache.redisTemplate.opsForValue().set(BizConstants.APPLY_CACHE_KEY_PREFIX + keyWorkflowId, value, BizConstants.APPLY_TIMEOUT_MINUTES, TimeUnit.MINUTES);
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }
@@ -158,13 +159,13 @@ public class KeyFromAppService implements IKeyFromAppService {
         if (keyWorkflow == null) {
             throw new RuntimeException("该钥匙申请流程单不存在");
         }
-        if (keyWorkflow.getCurrentStatus() == BizConstants.TIMEOUT.longValue()) {
+        if (Long.valueOf(BizConstants.TIMEOUT).equals(keyWorkflow.getCurrentStatus())) {
             throw new RuntimeException("超时未审批，已自动拒绝");
         } else if (keyWorkflow.getCurrentStatus() != BizConstants.PENDING_APPROVAL.longValue()) {
             throw new RuntimeException("该钥匙申请已审批");
         }
         //不管在不在直接删除redis中对应的key
-        String redisKey = "await_approval:" + keyApprovalDto.getKeyWorkflowId();
+        String redisKey = BizConstants.APPLY_CACHE_KEY_PREFIX + keyApprovalDto.getKeyWorkflowId();
         redisCache.deleteObject(redisKey);
 
         keyWorkflow.setCurrentStatus(keyApprovalDto.getApprovalAction().longValue());
@@ -243,13 +244,7 @@ public class KeyFromAppService implements IKeyFromAppService {
         List<Integer> ownPermissionKeyCabinetIds = new ArrayList<>();
         if (!BizConstants.ADMIN.equals(userBase.getRole())) {
             // 用户拥有权限的钥匙柜
-            ownPermissionKeyCabinetIds = (userBase.getSrttings() == null || userBase.getSrttings().trim().isEmpty())
-                    ? new ArrayList<>()
-                    : Arrays.stream(userBase.getSrttings().split(","))
-                    .map(String::trim)         // 去除多余空格
-                    .filter(s -> !s.isEmpty()) // 过滤掉空字符串
-                    .map(Integer::valueOf)     // 转成 Integer
-                    .collect(Collectors.toList());
+            ownPermissionKeyCabinetIds = StringUtils.strToIntegerList(userBase.getSrttings(), ",");
             // 如果用户没绑定任何钥匙柜，没必要再查下去了
             if (ownPermissionKeyCabinetIds.size() < 1) {
                 return new ArrayList<>();
@@ -475,13 +470,7 @@ public class KeyFromAppService implements IKeyFromAppService {
         }
         UserBase user = userMap.get(keyApplyDto.getApplyUserId());
         // 用户拥有权限的钥匙柜
-        Set<Integer> ownCabinetIdSet = (user.getSrttings() == null || user.getSrttings().trim().isEmpty())
-                ? new HashSet<>()
-                : Arrays.stream(user.getSrttings().split(","))
-                .map(String::trim)         // 去除多余空格
-                .filter(s -> !s.isEmpty()) // 过滤掉空字符串
-                .map(Integer::valueOf)     // 转成 Integer
-                .collect(Collectors.toSet());
+        Set<Integer> ownCabinetIdSet = StringUtils.strToIntegerSet(user.getSrttings(), ",");
         // 用户拥有的钥匙柜权限中，没有申请的钥匙柜
         if (!ownCabinetIdSet.contains(keyApplyDto.getKeyCabinetId())) {
             throw new RuntimeException("暂未拥有此钥匙所在的钥匙柜权限");
@@ -489,7 +478,6 @@ public class KeyFromAppService implements IKeyFromAppService {
         if ("false".equals(user.getActive())) {
             throw new RuntimeException("用户未激活");
         }
-
         // 校验审批人是否存在
         UserBase approvalUser = Optional.ofNullable(keyApplyDto.getApprovalUserId())
                 .map(userMap::get)

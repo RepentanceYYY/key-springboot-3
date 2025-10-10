@@ -114,7 +114,7 @@ public class KeyCabinetService implements IKeyCabinetService {
             //尽量避免受操作数据库的时间影响，先删除redis中的挂起
             for (KeyWorkflow keyWorkflowTmp : keyWorkflows) {
                 //不管在不在直接删除redis中对应的key
-                String redisKey = "await_approval:" + keyWorkflowTmp.getId();
+                String redisKey = BizConstants.APPLY_CACHE_KEY_PREFIX + keyWorkflowTmp.getId();
                 redisCache.deleteObject(redisKey);
             }
             for (KeyWorkflow keyWorkflowTmp : keyWorkflows) {
