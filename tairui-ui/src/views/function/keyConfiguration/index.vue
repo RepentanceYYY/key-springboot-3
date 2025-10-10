@@ -123,6 +123,7 @@ import {
   delKeyConfiguration,
   addKeyConfiguration,
   updateKeyConfiguration,
+  getNewKeyNumber
 } from "@/api/function/keyConfiguration"
 import {getCurrentInstance} from 'vue'
 
@@ -239,24 +240,14 @@ const handleSelectionChange = (selection) => {
 }
 
 // 新增
-const handleAdd = () => {
+const handleAdd = async () => {
   resetForm('form')
-  form.keyNumber = generateIntKeyNumber();
+  const res = await getNewKeyNumber();
+
+  form.keyNumber = res.data;
 
   open.value = true
   title.value = "添加钥匙柜配置"
-}
-/**
- * 生成唯一的序列号
- * @returns {number}
- */
-const generateIntKeyNumber = () => {
-  // 取当前时间戳的后 5 位（保证随时间变化）
-  const timestamp = Date.now().toString().slice(-5); // 5位
-  // 生成 4 位随机数，总长度 9位，不超过 INT(11)
-  const randomNum = Math.floor(Math.random() * 9000 + 1000).toString(); // 1000 ~ 9999
-  const keyNumber = parseInt(timestamp + randomNum, 10); // 转为数字
-  return keyNumber;
 }
 
 // 查询详情

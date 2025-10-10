@@ -12,7 +12,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Random;
+import java.util.Set;
 
 /**
  * 钥匙柜配置Service业务层处理
@@ -21,13 +24,17 @@ import java.util.List;
  * @date 2025-07-26
  */
 @Service
-public class SystemSettingsServiceImpl implements ISystemSettingsService
-{
+public class SystemSettingsServiceImpl implements ISystemSettingsService {
     @Autowired
     private SystemSettingsMapper systemSettingsMapper;
 
     @Autowired
     private IAuthSettingsService iAuthSettingsService;
+
+    private static final long MIN = 1_000_000_000L;
+    private static final long MAX = 2_147_483_647L;
+    private static final Random RANDOM = new Random();
+
     /**
      * 查询钥匙柜配置
      *
@@ -35,8 +42,7 @@ public class SystemSettingsServiceImpl implements ISystemSettingsService
      * @return 钥匙柜配置
      */
     @Override
-    public SystemSettings selectSystemSettingsById(Long id)
-    {
+    public SystemSettings selectSystemSettingsById(Long id) {
         return systemSettingsMapper.selectSystemSettingsById(id);
     }
 
@@ -47,8 +53,7 @@ public class SystemSettingsServiceImpl implements ISystemSettingsService
      * @return 钥匙柜配置
      */
     @Override
-    public List<SystemSettings> selectSystemSettingsList(SystemSettings systemSettings)
-    {
+    public List<SystemSettings> selectSystemSettingsList(SystemSettings systemSettings) {
         return systemSettingsMapper.selectSystemSettingsList(systemSettings);
     }
 
@@ -57,12 +62,11 @@ public class SystemSettingsServiceImpl implements ISystemSettingsService
      *
      * @param systemSettings 钥匙柜配置
      * @return 结果
-     *             `lastUpdateTime` = NOW();
+     * `lastUpdateTime` = NOW();
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public int insertSystemSettings(SystemSettings systemSettings)
-    {
+    public int insertSystemSettings(SystemSettings systemSettings) {
         systemSettings.setScheduledReboot("enable");
         systemSettings.setRebootTime("00:00");
         systemSettings.setNetworkMode("standalone");
@@ -73,15 +77,15 @@ public class SystemSettingsServiceImpl implements ISystemSettingsService
         systemSettings.setTimeoutReminder("disable");
         systemSettings.setReturnToHome("3");
         systemSettings.setVoiceAnnouncement("enable");
-        int insertCount   = systemSettingsMapper.insertSystemSettings(systemSettings);
+        int insertCount = systemSettingsMapper.insertSystemSettings(systemSettings);
         if (insertCount <= 0) {
 
-            return  insertCount;
+            return insertCount;
         }
         int id = systemSettingsMapper.lastInsertId();
         AuthSettings authSettings = new AuthSettings();
         authSettings.setSrttings((long) id);
-        return   iAuthSettingsService.insertAuthSettings(authSettings);
+        return iAuthSettingsService.insertAuthSettings(authSettings);
     }
 
     /**
@@ -91,8 +95,7 @@ public class SystemSettingsServiceImpl implements ISystemSettingsService
      * @return 结果
      */
     @Override
-    public int updateSystemSettings(SystemSettings systemSettings)
-    {
+    public int updateSystemSettings(SystemSettings systemSettings) {
         return systemSettingsMapper.updateSystemSettings(systemSettings);
     }
 
@@ -103,8 +106,7 @@ public class SystemSettingsServiceImpl implements ISystemSettingsService
      * @return 结果
      */
     @Override
-    public int deleteSystemSettingsByIds(Long[] ids)
-    {
+    public int deleteSystemSettingsByIds(Long[] ids) {
         return systemSettingsMapper.deleteSystemSettingsByIds(ids);
     }
 
@@ -115,8 +117,7 @@ public class SystemSettingsServiceImpl implements ISystemSettingsService
      * @return 结果
      */
     @Override
-    public int deleteSystemSettingsById(Long id)
-    {
+    public int deleteSystemSettingsById(Long id) {
         return systemSettingsMapper.deleteSystemSettingsById(id);
     }
 
@@ -127,12 +128,10 @@ public class SystemSettingsServiceImpl implements ISystemSettingsService
      * @return 结果
      */
 
-    public boolean checkKeyNumberUnique(SystemSettings systemSettings)
-    {
+    public boolean checkKeyNumberUnique(SystemSettings systemSettings) {
         Long id = StringUtils.isNull(systemSettings.getId()) ? -1L : systemSettings.getId();
         SystemSettings info = systemSettingsMapper.checkKeyNumberUnique(systemSettings.getKeyNumber());
-        if (StringUtils.isNotNull(info) && info.getId().longValue() != id.longValue())
-        {
+        if (StringUtils.isNotNull(info) && info.getId().longValue() != id.longValue()) {
             return UserConstants.NOT_UNIQUE;
         }
         return UserConstants.UNIQUE;
@@ -147,5 +146,17 @@ public class SystemSettingsServiceImpl implements ISystemSettingsService
     @Override
     public List<AuthSystemSettings> selectAuthSystemSettingsList(AuthSystemSettings authSystemSettings) {
         return systemSettingsMapper.selectAuthSystemSettingsList(authSystemSettings);
+    }
+
+    @Override
+    public Long generateUniqueSystemSettingsKeyNumber() {
+        List<Long> keyNumberListFromDb = systemSettingsMapper.selectSystemSettingsAllKeyNumber();
+        Set<Long> existingKeys = new HashSet<>(keyNumberListFromDb);
+        while (true) {
+            Long randomKeyNumber = Math.round(MIN + RANDOM.nextDouble() * (MAX - MIN));
+            if (!existingKeys.contains(randomKeyNumber)) {
+                return randomKeyNumber;
+            }
+        }
     }
 }

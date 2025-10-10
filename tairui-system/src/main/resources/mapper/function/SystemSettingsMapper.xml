@@ -1,66 +1,66 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper
-PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
-"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.tairui.function.mapper.SystemSettingsMapper">
 
     <resultMap type="SystemSettings" id="SystemSettingsResult">
-        <result property="id"    column="id"    />
-        <result property="keyNumber"    column="keyNumber"    />
-        <result property="cabinetName"    column="cabinetName"    />
-        <result property="cabinetCapacity"    column="cabinetCapacity"    />
-        <result property="adminPassword"    column="adminPassword"    />
-        <result property="scheduledReboot"    column="scheduledReboot"    />
-        <result property="rebootTime"    column="rebootTime"    />
-        <result property="networkMode"    column="networkMode"    />
-        <result property="keyRequest"    column="keyRequest"    />
-        <result property="borrowReview"    column="borrowReview"    />
-        <result property="returnCycle"    column="returnCycle"    />
-        <result property="returnTime"    column="returnTime"    />
-        <result property="timeoutReminder"    column="timeoutReminder"    />
-        <result property="returnToHome"    column="returnToHome"    />
-        <result property="voiceAnnouncement"    column="voiceAnnouncement"    />
-        <result property="lastUpdateTime"    column="lastUpdateTime"    />
-        <result property="relatedUserNames"    column="related_user_names"    />
-        <result property="relatedUserIds"    column="related_user_ids"    />
-        <result property="bindStatus"    column="bindStatus"    />
+        <result property="id" column="id"/>
+        <result property="keyNumber" column="keyNumber"/>
+        <result property="cabinetName" column="cabinetName"/>
+        <result property="cabinetCapacity" column="cabinetCapacity"/>
+        <result property="adminPassword" column="adminPassword"/>
+        <result property="scheduledReboot" column="scheduledReboot"/>
+        <result property="rebootTime" column="rebootTime"/>
+        <result property="networkMode" column="networkMode"/>
+        <result property="keyRequest" column="keyRequest"/>
+        <result property="borrowReview" column="borrowReview"/>
+        <result property="returnCycle" column="returnCycle"/>
+        <result property="returnTime" column="returnTime"/>
+        <result property="timeoutReminder" column="timeoutReminder"/>
+        <result property="returnToHome" column="returnToHome"/>
+        <result property="voiceAnnouncement" column="voiceAnnouncement"/>
+        <result property="lastUpdateTime" column="lastUpdateTime"/>
+        <result property="relatedUserNames" column="related_user_names"/>
+        <result property="relatedUserIds" column="related_user_ids"/>
+        <result property="bindStatus" column="bindStatus"/>
     </resultMap>
 
     <sql id="selectSystemSettingsVo">
-        SELECT
-            ss.id,
-            ss.keyNumber,
-            ss.cabinetName,
-            ss.cabinetCapacity,
-            ss.adminPassword,
-            ss.scheduledReboot,
-            ss.rebootTime,
-            ss.networkMode,
-            ss.keyRequest,
-            ss.borrowReview,
-            ss.returnCycle,
-            ss.returnTime,
-            ss.timeoutReminder,
-            ss.returnToHome,
-            ss.voiceAnnouncement,
-            ss.lastUpdateTime,
-            ss.bindStatus,
-            GROUP_CONCAT(DISTINCT u.name ORDER BY u.id SEPARATOR ',') AS related_user_names,
-            GROUP_CONCAT(DISTINCT u.id ORDER BY u.id SEPARATOR ',') AS related_user_ids
-        FROM
-            system_settings ss
+        SELECT ss.id,
+               ss.keyNumber,
+               ss.cabinetName,
+               ss.cabinetCapacity,
+               ss.adminPassword,
+               ss.scheduledReboot,
+               ss.rebootTime,
+               ss.networkMode,
+               ss.keyRequest,
+               ss.borrowReview,
+               ss.returnCycle,
+               ss.returnTime,
+               ss.timeoutReminder,
+               ss.returnToHome,
+               ss.voiceAnnouncement,
+               ss.lastUpdateTime,
+               ss.bindStatus,
+               GROUP_CONCAT(DISTINCT u.name ORDER BY u.id SEPARATOR ',') AS related_user_names,
+               GROUP_CONCAT(DISTINCT u.id ORDER BY u.id SEPARATOR ',')   AS related_user_ids
+        FROM system_settings ss
 
-                LEFT JOIN `user` u
-                          ON FIND_IN_SET(ss.id, u.srttings)
+                 LEFT JOIN `user` u
+                           ON FIND_IN_SET(ss.id, u.srttings)
 
     </sql>
 
     <select id="selectSystemSettingsList" parameterType="SystemSettings" resultMap="SystemSettingsResult">
         <include refid="selectSystemSettingsVo"/>
         <where>
-            <if test="keyNumber != null "> and ss.keyNumber like concat('%', #{keyNumber}, '%')</if>
-            <if test="cabinetName != null  and cabinetName != ''"> and ss.cabinetName like concat('%', #{cabinetName}, '%')</if>
-            <if test="bindStatus != null"> and ss.bindStatus =  #{bindStatus}</if>
+            <if test="keyNumber != null ">and ss.keyNumber like concat('%', #{keyNumber}, '%')</if>
+            <if test="cabinetName != null  and cabinetName != ''">and ss.cabinetName like concat('%', #{cabinetName},
+                '%')
+            </if>
+            <if test="bindStatus != null">and ss.bindStatus = #{bindStatus}</if>
         </where>
         GROUP BY
         ss.id
@@ -73,7 +73,9 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         ss.id
     </select>
     <select id="checkKeyNumberUnique" parameterType="String" resultMap="SystemSettingsResult">
-        select id,keyNumber from system_settings where keyNumber = #{keyNumber}  limit 1
+        select id, keyNumber
+        from system_settings
+        where keyNumber = #{keyNumber} limit 1
     </select>
     <select id="lastInsertId" resultType="java.lang.Integer">
         SELECT LAST_INSERT_ID();
@@ -124,6 +126,11 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     <select id="selectAllSystemSettings" resultType="com.tairui.function.domain.SystemSettings">
         <include refid="selectSystemSettingsVo"/>
     </select>
+
+    <select id="selectSystemSettingsAllKeyNumber" resultType="java.lang.Long">
+        select keyNumber
+        from system_settings;
+    </select>
     <insert id="insertSystemSettings" parameterType="SystemSettings" useGeneratedKeys="true" keyProperty="id">
         insert into system_settings
         <trim prefix="(" suffix=")" suffixOverrides=",">
@@ -142,7 +149,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="returnToHome != null">returnToHome,</if>
             <if test="voiceAnnouncement != null">voiceAnnouncement,</if>
             lastUpdateTime,
-         </trim>
+        </trim>
         <trim prefix="values (" suffix=")" suffixOverrides=",">
             <if test="keyNumber != null">#{keyNumber},</if>
             <if test="cabinetName != null">#{cabinetName},</if>
@@ -159,7 +166,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="returnToHome != null">#{returnToHome},</if>
             <if test="voiceAnnouncement != null">#{voiceAnnouncement},</if>
             now(),
-         </trim>
+        </trim>
     </insert>
 
     <update id="updateSystemSettings" parameterType="SystemSettings">
@@ -185,7 +192,9 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     </update>
 
     <delete id="deleteSystemSettingsById" parameterType="Long">
-        delete from system_settings where id = #{id}
+        delete
+        from system_settings
+        where id = #{id}
     </delete>
 
     <delete id="deleteSystemSettingsByIds" parameterType="String">

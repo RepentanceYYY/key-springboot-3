@@ -75,4 +75,5 @@ public interface ISystemSettingsService
      * @return 钥匙柜配置+高级配置
      */
     public List<AuthSystemSettings> selectAuthSystemSettingsList(AuthSystemSettings authSystemSettings);
+    public Long generateUniqueSystemSettingsKeyNumber();
 }

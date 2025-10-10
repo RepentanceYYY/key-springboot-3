@@ -11,8 +11,7 @@ import java.util.List;
  * @author yhs
  * @date 2025-07-26
  */
-public interface SystemSettingsMapper
-{
+public interface SystemSettingsMapper {
     /**
      * 查询钥匙柜配置
      *
@@ -28,6 +27,7 @@ public interface SystemSettingsMapper
      * @return 钥匙柜配置集合
      */
     public List<SystemSettings> selectSystemSettingsList(SystemSettings systemSettings);
+
     public List<SystemSettings> selectAllSystemSettings();
 
     /**
@@ -40,7 +40,6 @@ public interface SystemSettingsMapper
 
     /**
      * 获取刚插入的 ID
-     *
      */
     public int lastInsertId();
 
@@ -74,7 +73,7 @@ public interface SystemSettingsMapper
      * @param keyNumber 序列号
      * @return 结果
      */
-    public  SystemSettings checkKeyNumberUnique(String keyNumber);
+    public SystemSettings checkKeyNumberUnique(String keyNumber);
 
     /**
      * 查询钥匙柜配置+高级配置
@@ -83,4 +82,11 @@ public interface SystemSettingsMapper
      * @return 钥匙柜配置+高级配置
      */
     public List<AuthSystemSettings> selectAuthSystemSettingsList(AuthSystemSettings authSystemSettings);
+
+    /**
+     * 查询所有已经存在的钥匙柜序号
+     *
+     * @return
+     */
+    List<Long> selectSystemSettingsAllKeyNumber();
 }

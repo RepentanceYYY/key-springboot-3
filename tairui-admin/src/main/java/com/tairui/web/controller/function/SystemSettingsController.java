@@ -15,6 +15,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import jakarta.servlet.http.*;
+
 import java.util.List;
 
 /**
@@ -78,8 +79,7 @@ public class SystemSettingsController extends BaseController {
     @Log(title = "钥匙柜配置", businessType = BusinessType.INSERT)
     @PostMapping
     public AjaxResult add(@RequestBody SystemSettings systemSettings) {
-        if (StringUtils.isNotEmpty(systemSettings.getKeyNumber()) && !systemSettingsService.checkKeyNumberUnique(systemSettings))
-        {
+        if (StringUtils.isNotEmpty(systemSettings.getKeyNumber()) && !systemSettingsService.checkKeyNumberUnique(systemSettings)) {
             return error("新增序列号'" + systemSettings.getKeyNumber() + "'失败，序列号已存在");
         }
         return toAjax(systemSettingsService.insertSystemSettings(systemSettings));
@@ -92,8 +92,7 @@ public class SystemSettingsController extends BaseController {
     @Log(title = "钥匙柜配置", businessType = BusinessType.UPDATE)
     @PutMapping
     public AjaxResult edit(@RequestBody SystemSettings systemSettings) {
-        if (StringUtils.isNotEmpty(systemSettings.getKeyNumber()) && !systemSettingsService.checkKeyNumberUnique(systemSettings))
-        {
+        if (StringUtils.isNotEmpty(systemSettings.getKeyNumber()) && !systemSettingsService.checkKeyNumberUnique(systemSettings)) {
             return error("修改序列号'" + systemSettings.getKeyNumber() + "'失败，序列号已存在");
         }
         return toAjax(systemSettingsService.updateSystemSettings(systemSettings));
@@ -107,5 +106,15 @@ public class SystemSettingsController extends BaseController {
     @DeleteMapping("/{ids}")
     public AjaxResult remove(@PathVariable Long[] ids) {
         return toAjax(systemSettingsService.deleteSystemSettingsByIds(ids));
+    }
+
+    /**
+     * 获取新的序列号
+     *
+     * @return
+     */
+    @GetMapping("/getNewKeyNumber")
+    public AjaxResult getNewKeyNumber() {
+        return AjaxResult.success("success", systemSettingsService.generateUniqueSystemSettingsKeyNumber());
     }
 }
