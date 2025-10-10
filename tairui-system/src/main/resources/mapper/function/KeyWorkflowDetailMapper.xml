@@ -169,10 +169,18 @@
         where id = #{id}
     </update>
     <update id="updateKeyWorkflowDetailStatusByIds">
-        update key_workflow_detail set status = #{status} where id IN
+        update key_workflow_detail set status = #{status},update_time = NOW() where id IN
         <foreach collection="ids" item="id" open="(" separator="," close=")">
             #{id}
         </foreach>
+    </update>
+    <update id="updateKeyWorkflowDetailByKeyWorkflowId">
+        update key_workflow_detail
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="status != null">status = #{status},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+        </trim>
+        where key_workflow_id = #{keyWorkflowId}
     </update>
 
     <delete id="deleteKeyWorkflowDetailById" parameterType="Long">

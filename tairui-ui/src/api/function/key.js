@@ -39,7 +39,7 @@ export function getKey(id) {
 export function initKeyApi(keyId) {
   return request({
     url: '/function/key/initKeyApi/' + keyId,
-    method: 'get'
+    method: 'put'
   })
 }
 

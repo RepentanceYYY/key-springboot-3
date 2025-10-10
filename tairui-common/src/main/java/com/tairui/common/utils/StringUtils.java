@@ -674,6 +674,35 @@ public class StringUtils extends org.apache.commons.lang3.StringUtils {
     }
 
     /**
+     * 字符串转Long类型Set
+     *
+     * @param str 原始字符串
+     * @param sep 分隔符
+     * @return 返回Long类型集合
+     */
+    public static Set<Long> strToLongSet(String str, String sep) {
+        Set<Long> resultSet = new HashSet<>();
+        if (str == null || str.trim().isEmpty()) {
+            return resultSet;
+        }
+
+        String[] parts = str.split(sep);
+        for (String part : parts) {
+            if (part != null) {
+                String trimmed = part.trim();
+                if (!trimmed.isEmpty()) {
+                    try {
+                        resultSet.add(Long.valueOf(trimmed));
+                    } catch (NumberFormatException e) {
+                        //不处理
+                    }
+                }
+            }
+        }
+        return resultSet;
+    }
+
+    /**
      * 字符串转Integer类型List
      *
      * @param str

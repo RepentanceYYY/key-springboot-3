@@ -211,12 +211,18 @@
     <select id="selectKeyIdsByKeyCabinetId" resultType="java.lang.Integer">
         select k.id
         from `key` k
-        where k.srttings = #{keyCabinetId} and k.name !='未命名编号';
+        where k.srttings = #{keyCabinetId}
+          and k.name !='未命名编号';
     </select>
     <select id="selectKeyIdsByUserId" resultType="java.lang.Integer">
         select ku.keyId
         from key_user ku
         where ku.userId = #{userId};
+    </select>
+    <select id="selectBoundUserIdByKeyId" resultType="java.lang.Long">
+        select ku.userId
+        from key_user ku
+        where ku.keyId = #{keyId};
     </select>
 
 

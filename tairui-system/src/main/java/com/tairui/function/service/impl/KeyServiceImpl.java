@@ -12,6 +12,7 @@ import com.tairui.function.domain.SystemSettings;
 import com.tairui.function.domain.vo.KeyAppVo;
 import com.tairui.function.mapper.*;
 import com.tairui.function.service.IKeyService;
+import com.tairui.handler.keyWorkflowHandler;
 import com.tairui.system.mapper.SysOperLogMapper;
 import com.tairui.utils.BizConstants;
 import org.springframework.beans.BeanUtils;
@@ -42,6 +43,8 @@ public class KeyServiceImpl implements IKeyService {
     private KeyWorkflowMapper keyWorkflowMapper;
     @Autowired
     private RedisCache redisCache;
+    @Autowired
+    private keyWorkflowHandler keyWorkflowHandler;
     @Autowired
     private SysOperLogMapper operLogMapper;
 
@@ -85,13 +88,25 @@ public class KeyServiceImpl implements IKeyService {
      * @return 结果
      */
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public int updateKey(Key key) {
+        //原来绑定的用户id
+        List<Long> boundUserId = keyMapper.selectBoundUserIdByKeyId(key.getId());
+        //准备绑定的用户
+        Set<Long> readyBoundUserIds = StringUtils.strToLongSet(key.getUserId(), ",");
+        //获取准备解绑的用户id
+        Set<Long> readyUnbindUserIds = boundUserId.stream()
+                .filter(id -> !readyBoundUserIds.contains(id))
+                .collect(Collectors.toSet());
+        keyWorkflowHandler.rejectBorrowApplyByKeyIdAndUserId(key.getId(), readyUnbindUserIds, "由后台解绑钥匙而拒绝申请");
+        //先全部解绑
         keyMapper.deleteKeyUser(key.getId());
         if (key.getUserId() != null && !key.getUserId().isEmpty()) {
             // 按逗号分割字符串，得到字符串数组
             String[] userIds = key.getUserId().split(",");
             for (int i = 0; i < userIds.length; i++) {
                 long userId = Long.parseLong(userIds[i].trim());
+                //绑定
                 keyMapper.insertKeyUser(key.getId(), userId);
             }
         }
@@ -128,7 +143,9 @@ public class KeyServiceImpl implements IKeyService {
      * @return
      */
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public int initKeyApi(Long keyId) {
+        keyWorkflowHandler.rejectKeyRelatedBorrowApply(keyId, "由申请包含的钥匙初始化而拒绝申请");
         keyMapper.deleteKeyUser(keyId);
         return keyMapper.initKeyApi(keyId);
     }
@@ -174,27 +191,10 @@ public class KeyServiceImpl implements IKeyService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public int batchUnBindKeys(String srttings) {
-        //解绑之前，结束所有解绑的柜子下的带结束钥匙借用申请
-        List<Long> keyCabinetIds = StringUtils.strToLongList(srttings, ",");
-        List<Integer> status = Arrays.asList(BizConstants.PENDING_APPROVAL, BizConstants.BORROW_APPROVED_NOT_PICKED);
-        List<KeyWorkflowDetail> keyWorkflowDetails = keyWorkflowDetailMapper.selectKeyWorkflowDetailByKeyCabinetIdsAndStatus(keyCabinetIds, status, BizConstants.APPLY_TYPE_BORROW);
-        if (keyWorkflowDetails.isEmpty()) {
-            return keyMapper.batchUnBindKeys(srttings);
-        }
-        List<Long> awaitApprovalWorkflowIds = keyWorkflowDetails.stream().map(x -> x.getKeyWorkflowId()).collect(Collectors.toSet()).stream().toList();
-        List<Long> awaitEndWorkflowDetailIds = keyWorkflowDetails.stream().map(y -> y.getId()).collect(Collectors.toList());
-        keyWorkflowDetailMapper.updateKeyWorkflowDetailStatusByIds(awaitEndWorkflowDetailIds, BizConstants.BIND_END_DETAIL_STATUS);
-        KeyWorkflow keyWorkflow = new KeyWorkflow();
-        keyWorkflow.setCurrentStatus(Long.valueOf(BizConstants.REJECTED));
-        keyWorkflow.setApprovalTime(new Date());
-        keyWorkflow.setApprovalComment("因后台解绑而自动拒绝申请");
-        keyWorkflowMapper.updateKeyWorkflowCurrentStatusByWorkflowIds(awaitApprovalWorkflowIds, keyWorkflow);
+
         //解绑
         int result = keyMapper.batchUnBindKeys(srttings);
-        //删除相关的挂起的申请流id缓存
-        for (Long tmpId : awaitApprovalWorkflowIds) {
-            redisCache.deleteObject(BizConstants.APPLY_CACHE_KEY_PREFIX + tmpId);
-        }
+        keyWorkflowHandler.rejectKeyCabinetRelateBorrowApply(StringUtils.strToLongList(srttings, ","), "由后台解绑钥匙而拒绝申请");
         return result;
     }
 

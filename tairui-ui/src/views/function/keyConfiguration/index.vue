@@ -5,16 +5,16 @@
       <el-form-item label="绑定柜子" prop="bindStatus">
         <el-select v-model="queryParams.bindStatus" placeholder="绑定柜子" style="width: 200px;" clearable>
           <el-option v-for="item in function_bind_status" :key="item.value" :label="item.label"
-            :value="item.value"></el-option>
+                     :value="item.value"></el-option>
         </el-select>
       </el-form-item>
 
       <el-form-item label="序列号" prop="keyNumber">
-        <el-input v-model="queryParams.keyNumber" placeholder="请输入序列号" clearable @keyup.enter="handleQuery" />
+        <el-input v-model="queryParams.keyNumber" placeholder="请输入序列号" clearable @keyup.enter="handleQuery"/>
       </el-form-item>
 
       <el-form-item label="柜子名称" prop="cabinetName">
-        <el-input v-model="queryParams.cabinetName" placeholder="请输入柜子名称" clearable @keyup.enter="handleQuery" />
+        <el-input v-model="queryParams.cabinetName" placeholder="请输入柜子名称" clearable @keyup.enter="handleQuery"/>
       </el-form-item>
 
       <el-form-item>
@@ -31,7 +31,7 @@
 
       <el-col :span="1.5">
         <el-button type="warning" plain icon="Download" @click="handleExport"
-          v-hasPermi="['function:keyConfiguration:export']">导出
+                   v-hasPermi="['function:keyConfiguration:export']">导出
         </el-button>
       </el-col>
 
@@ -39,16 +39,16 @@
     </el-row>
 
     <el-table v-loading="loading" :data="keyConfigurationList" @selection-change="handleSelectionChange">
-      <el-table-column type="selection" width="55" align="center" />
+      <el-table-column type="selection" width="55" align="center"/>
 
       <el-table-column label="绑定柜子" align="center" prop="bindStatus">
         <template v-slot="scope">
-          <dict-tag :options="function_bind_status" :value="scope.row.bindStatus" />
+          <dict-tag :options="function_bind_status" :value="scope.row.bindStatus"/>
         </template>
       </el-table-column>
 
-      <el-table-column label="序列号" align="center" prop="keyNumber" />
-      <el-table-column label="柜子名称" align="center" prop="cabinetName" />
+      <el-table-column label="序列号" align="center" prop="keyNumber"/>
+      <el-table-column label="柜子名称" align="center" prop="cabinetName"/>
 
       <el-table-column label="柜子容量" align="center" prop="cabinetCapacity">
         <template v-slot="scope">
@@ -56,9 +56,9 @@
         </template>
       </el-table-column>
 
-      <el-table-column label="管理密码" align="center" prop="adminPassword" :formatter="formatPassword" />
+      <el-table-column label="管理密码" align="center" prop="adminPassword" :formatter="formatPassword"/>
 
-      <el-table-column label="所绑定用户" width="240" show-overflow-tooltip align="center" prop="relatedUserNames" />
+      <el-table-column label="所绑定用户" width="240" show-overflow-tooltip align="center" prop="relatedUserNames"/>
 
       <el-table-column label="最近更新时间" align="center" prop="lastUpdateTime" width="180">
         <template v-slot="scope">
@@ -69,34 +69,34 @@
       <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
         <template v-slot="scope">
           <el-button type="text" icon="el-icon-query" @click="handleQueryId(scope.row)"
-            v-hasPermi="['function:keyConfiguration:query']" :disabled="scope.row.bindStatus === 0">详情
+                     v-hasPermi="['function:keyConfiguration:query']" :disabled="scope.row.bindStatus === 0">详情
           </el-button>
         </template>
       </el-table-column>
     </el-table>
 
     <pagination v-show="total > 0" :total="total" v-model:page="queryParams.pageNum"
-      v-model:limit="queryParams.pageSize" @pagination="getList" />
+                v-model:limit="queryParams.pageSize" @pagination="getList"/>
 
     <!-- 添加或修改钥匙柜配置对话框 -->
     <el-dialog :title="title" v-model="open" width="500px" append-to-body :close-on-click-modal="false">
       <el-form ref="formRef" :model="form" :rules="rules" label-width="80px">
         <el-form-item label="序列号" prop="keyNumber">
           <el-input v-model="form.keyNumber" placeholder="请输入序列号" type="number"
-            @input="(val) => form.keyNumber = val.replace(/[^\d]/g, '')" disabled />
+                    @input="(val) => form.keyNumber = val.replace(/[^\d]/g, '')" disabled/>
         </el-form-item>
 
         <el-form-item label="柜子名称" prop="cabinetName">
-          <el-input v-model="form.cabinetName" placeholder="请输入柜子名称" />
+          <el-input v-model="form.cabinetName" placeholder="请输入柜子名称"/>
         </el-form-item>
 
         <el-form-item label="柜子容量" prop="cabinetCapacity">
-          <el-input-number v-model="form.cabinetCapacity" :min="1" placeholder="请输入柜子容量" style="width: 80%;" />
+          <el-input-number v-model="form.cabinetCapacity" :min="1" placeholder="请输入柜子容量" style="width: 80%;"/>
           <span style="margin-left: 8px;">位</span>
         </el-form-item>
 
         <el-form-item label="管理密码" prop="adminPassword">
-          <el-input v-model="form.adminPassword" type="password" show-password placeholder="请输入管理密码" />
+          <el-input v-model="form.adminPassword" type="password" show-password placeholder="请输入管理密码"/>
         </el-form-item>
       </el-form>
 
@@ -111,13 +111,12 @@
   </div>
 
 
-
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
-import { ElMessage } from 'element-plus'
+import {ref, reactive, onMounted} from 'vue'
+import {useRouter} from 'vue-router'
+import {ElMessage} from 'element-plus'
 import {
   listKeyConfiguration,
   getKeyConfiguration,
@@ -125,12 +124,12 @@ import {
   addKeyConfiguration,
   updateKeyConfiguration,
 } from "@/api/function/keyConfiguration"
-import { getCurrentInstance } from 'vue'
+import {getCurrentInstance} from 'vue'
 
 // 路由
 const router = useRouter()
-const { proxy } = getCurrentInstance();
-const { function_bind_status } = proxy.useDict("function_bind_status");
+const {proxy} = getCurrentInstance();
+const {function_bind_status} = proxy.useDict("function_bind_status");
 
 // 状态
 const loading = ref(true)
@@ -180,18 +179,18 @@ const queryFormRef = ref(null)
 // 表单校验规则
 const rules = reactive({
   keyNumber: [
-    { required: true, message: "请输入序列号", trigger: "blur" },
-    { pattern: /^\d+$/, message: "序列号只能包含数字", trigger: "blur" },
-    { min: 8, max: 16, message: "序列号长度在8-16位之间", trigger: "blur" }
+    {required: true, message: "请输入序列号", trigger: "blur"},
+    {pattern: /^\d+$/, message: "序列号只能包含数字", trigger: "blur"},
+    {min: 8, max: 16, message: "序列号长度在8-16位之间", trigger: "blur"}
   ],
   cabinetName: [
-    { required: true, message: "柜子名称不能为空", trigger: "blur" }
+    {required: true, message: "柜子名称不能为空", trigger: "blur"}
   ],
   cabinetCapacity: [
-    { required: true, message: "柜子容量不能为空", trigger: "blur" }
+    {required: true, message: "柜子容量不能为空", trigger: "blur"}
   ],
   adminPassword: [
-    { required: true, message: "管理密码不能为空", trigger: "blur" }
+    {required: true, message: "管理密码不能为空", trigger: "blur"}
   ],
 })
 
@@ -242,18 +241,22 @@ const handleSelectionChange = (selection) => {
 // 新增
 const handleAdd = () => {
   resetForm('form')
-
-  const timestamp = Date.now().toString().slice(-6)
-  const minRandomLen = 2
-  const maxRandomLen = 10
-  const randomLen = Math.floor(Math.random() * (maxRandomLen - minRandomLen + 1)) + minRandomLen
-  const minRandom = Math.pow(10, randomLen - 1)
-  const maxRandom = Math.pow(10, randomLen) - 1
-  const randomNum = Math.floor(Math.random() * (maxRandom - minRandom + 1) + minRandom).toString()
-  form.keyNumber = timestamp + randomNum
+  form.keyNumber = generateIntKeyNumber();
 
   open.value = true
   title.value = "添加钥匙柜配置"
+}
+/**
+ * 生成唯一的序列号
+ * @returns {number}
+ */
+const generateIntKeyNumber = () => {
+  // 取当前时间戳的后 5 位（保证随时间变化）
+  const timestamp = Date.now().toString().slice(-5); // 5位
+  // 生成 4 位随机数，总长度 9位，不超过 INT(11)
+  const randomNum = Math.floor(Math.random() * 9000 + 1000).toString(); // 1000 ~ 9999
+  const keyNumber = parseInt(timestamp + randomNum, 10); // 转为数字
+  return keyNumber;
 }
 
 // 查询详情
@@ -308,7 +311,7 @@ const handleDelete = (row) => {
 
 // 导出
 const handleExport = () => {
-  download('function/keyConfiguration/export', { ...queryParams }, `钥匙柜配置_${Date.now()}.xlsx`)
+  download('function/keyConfiguration/export', {...queryParams}, `钥匙柜配置_${Date.now()}.xlsx`)
 }
 
 // 页面挂载后获取列表

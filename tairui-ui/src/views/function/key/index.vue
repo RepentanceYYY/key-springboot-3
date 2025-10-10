@@ -174,7 +174,7 @@
           <el-input v-model="form.code" placeholder="请输入钥匙编号" />
         </el-form-item>
         <el-form-item label="绑定用户" prop="userList">
-          <el-select v-model="form.userList" multiple placeholder="请选择钥匙柜">
+          <el-select v-model="form.userList" multiple placeholder="请选择用户">
             <el-option
               v-for="item in userList"
               :key="item.id"

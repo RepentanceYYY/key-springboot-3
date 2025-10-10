@@ -168,14 +168,23 @@ public interface KeyMapper {
 
     /**
      * 解绑用户绑定的钥匙
+     *
      * @param userId 需要解绑的用户id
      * @param keyIds 需要解绑的钥匙ids
      * @return
      */
-    public int batchUnBindKeysByUserId(@Param("userId")Integer userId,@Param("keyIds")List<Integer> keyIds);
+    public int batchUnBindKeysByUserId(@Param("userId") Integer userId, @Param("keyIds") List<Integer> keyIds);
 
 
     List<Key> listKeyByUser(Map<String, Object> mapParam);
+
+    /**
+     * 查询某把钥匙绑定的所有用户id
+     *
+     * @param keyId 钥匙id
+     * @return 绑定的用户id
+     */
+    List<Long> selectBoundUserIdByKeyId(@Param("keyId") Long keyId);
 
     /**
      * 由于通用性不强，我直接在sql里把它查出来了

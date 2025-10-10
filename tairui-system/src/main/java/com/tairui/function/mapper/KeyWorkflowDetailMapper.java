@@ -127,5 +127,12 @@ public interface KeyWorkflowDetailMapper {
 
     public int updateKeyWorkflowDetailStatusByIds(@Param("ids") List<Long> ids, @Param("status") int status);
 
+    /**
+     * 通过申请流id更新详情状态
+     *
+     * @param keyWorkflowDetail
+     * @return
+     */
+    public int updateKeyWorkflowDetailByKeyWorkflowId(KeyWorkflowDetail keyWorkflowDetail);
 
 }

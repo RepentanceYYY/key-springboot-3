@@ -31,7 +31,7 @@ public class BizConstants {
     /**
      * 借用同意并已领走钥匙，或借用被拒绝状态值
      */
-    public static final Integer BORROW_APPROVED_PICKED_OR_REJECTED = 2;
+    public static final int BORROW_APPROVED_PICKED_OR_REJECTED = 2;
     /**
      * 未申请过
      */

@@ -418,7 +418,7 @@ public class KeyFromAppService implements IKeyFromAppService {
                 break;
             }
             //最后一条申请已结束
-            if (keyWorkflowDetail.getStatus() == BizConstants.BORROW_APPROVED_PICKED_OR_REJECTED.longValue()) {
+            if (Long.valueOf(BizConstants.BORROW_APPROVED_PICKED_OR_REJECTED).equals(keyWorkflowDetail.getStatus())) {
                 break;
             }
             throw new RuntimeException("部分钥匙正在被借用申请中");

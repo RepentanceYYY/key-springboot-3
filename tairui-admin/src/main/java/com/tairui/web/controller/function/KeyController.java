@@ -87,7 +87,7 @@ public class KeyController extends BaseController
      * 钥匙初始化
      */
     @PreAuthorize("@ss.hasPermi('function:key:initKey')")
-    @GetMapping(value = "/initKeyApi/{keyId}")
+    @PutMapping(value = "/initKeyApi/{keyId}")
     public AjaxResult initKeyApi(@PathVariable("keyId") Long keyId)
     {
 
